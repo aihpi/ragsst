@@ -1,0 +1,34 @@
+KI-Servicezentrum Berlin-Brandenburg (KISZ-BB)
+Welcome to the KISZ-BB at HPI!
+
+The KISZ-BB is one of four service centers for artificial intelligence (AI) funded by the German Federal Ministry of Education and Research (BMBF). Our goal is to improve access to AI technology and to lower AI's financial and technological barriers in business and society.
+
+To help solve societal challenges in areas such as education, climate change, care, administration, medicine, and manufacturing, we are creating an infrastructure that facilitates exchange between basic research, applied science, and companies and enables the promotion of entrepreneurial innovation by start-ups.
+
+Mission
+Target group & offer
+
+We support start-ups, businesses, public institutions, students, and researchers to take the next step toward the professionalization and automation of AI applications. We provide the resources, educational services, and guidance necessary to collaboratively translate scientific knowledge into practice and foster entrepreneurial innovation.
+
+Research, education & consulting services
+
+We derive our educational and consulting services from research findings such as AI hardware optimization, energy-efficient algorithms, emulation environments for edge learning, and modular explainability approaches for AI models.
+
+Infrastructure
+
+Our AI infrastructure provides platforms for training, inference, and system integration. In this way, we create a foundation for developing and transferring AI applications. The AI infrastructure builds on existing computing resources and operational concepts at HPI, such as the Future SOC Lab.
+
+Integrative approach
+
+Our integrative approach involves HPI's School of Design Thinking, School of Entrepreneurship, Mittelstand Digitalzentrum Berlin, and HPI's Research Schools in addition to HPI's computing resources and research.
+
+Transfer services
+In addition to computing resources tailored to AI applications, we also offer consulting, professional development through open education, and prototyping workshops. A typical example of our services is assistance with the investment decision as to whether an infrastructure suitable for AI applications should be acquired or whether cloud-based offerings should be used.
+
+We are happy to address your individual needs and guide you through all steps from brainstorming to developing and operating AI applications.
+
+We offer the following services free of charge:
+
+Education: Learning resources and formats such as workshops, MOOCs, or lectures to improve and enhance knowledge and skills related to AI. Available now!
+Consulting: Consulting services for custom AI applications and infrastructure selection, modeling, development, integration, transition to production environments, and prototyping. Available now!
+Computing Resources: Access to a heterogeneous AI computing infrastructure to meet the diverse needs of research, startups, and small and medium enterprises. Starting October 2023!
