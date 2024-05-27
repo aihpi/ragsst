@@ -1,0 +1,45 @@
+# Python byte-code files
+__pycache__/
+*.pyc
+
+# Virtual Environment
+myvenv/
+venv/
+.myvenv/
+.venv/
+
+# Env variables file
+.env
+
+# Data files
+data/*
+!data/.empty
+
+# Local data folders:
+local/
+resources/
+chroma_data/
+bak/
+flagged/
+obsolete/
+
+# My local files
+my_*
+local_*
+
+# IDE
+.vscode/
+
+# mypy and pytest
+.mypy_cache/
+.pytest_cache/
+
+# Compact code, bins
+*.tar
+
+# Interface related
+flagged/
+
+# Other
+todo.txt
+to-do.txt

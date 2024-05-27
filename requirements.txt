@@ -1,0 +1,8 @@
+# ollama. curl https://ollama.ai/install.sh | sh
+numpy==1.26.2
+requests==2.31.0
+pypdf==3.17.4
+sentence-transformers==2.2.2
+chromadb==0.4.20
+gradio>=4.19.2
+tqdm==4.66.1
