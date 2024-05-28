@@ -3,7 +3,7 @@
 
 ## Retrieval Augmented Generation and Semantic-search Tools
 
-A set of quick start tool to test and use as basis for various document-related use cases:
+A set of quick start tool to test and use as basis for various document-related use cases locally:
 
 - Rag: Prompt an LLM that uses relevant context to answer your queries
 - Semantic Retrieval: Retrieve relevant passages from documents showing sources and relevance.
@@ -66,7 +66,7 @@ $ ollama pull llama3
 - Start it with 
 
 ```shell
-$ python3 main.py
+$ python3 ragsst.py
 ```
 
 - Open the expose url on your favourite browser

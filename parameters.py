@@ -9,7 +9,7 @@ DATA_PATH = "sample_data/"
 EMBEDDING_MODEL = "multi-qa-mpnet-base-cos-v1"
 
 # Vector Store
-CHROMA_DATA_PATH = "chroma_data/"
+VECTOR_DB_PATH = "chroma_data/"
 COLLECTION_NAME = "sample_docs"
 
 # LLM (ollama)
