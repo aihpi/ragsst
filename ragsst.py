@@ -192,8 +192,15 @@ class RAGTools:
 
         return contextual_prompt
 
-    def rag_query(self, user_msg: str, top_k: int, top_p: float, temp: float) -> str:
-        relevant_text = self.get_relevant_text(user_msg, sim_th=0.4)
+    def rag_query(
+        self, user_msg: str, sim_th: float, top_k: int, top_p: float, temp: float
+    ) -> str:
+        logger.debug(
+            f"rag_query args: sim_th: {sim_th}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
+        )
+        relevant_text = self.get_relevant_text(user_msg, sim_th=sim_th)
+        if not relevant_text:
+            return "Relevant passage not found. Try lowering the relevance threshold."
         context_query = self.get_context_prompt(user_msg, relevant_text)
         bot_response = self.llm_generate(context_query, top_k=top_k, top_p=top_p, temp=temp)
         return bot_response
@@ -201,6 +208,8 @@ class RAGTools:
     # ToDo
     def rag_chat(self, user_msg: str, history: List, top_k: int, top_p: float, temp: float) -> str:
         relevant_text = self.get_relevant_text(user_msg, sim_th=0.4)
+        if not relevant_text:
+            return "Relevant passage not found"
         context_query = self.get_context_prompt(user_msg, relevant_text)
         bot_response = self.llm_generate(context_query, top_k=top_k, top_p=top_p, temp=temp)
         return bot_response
@@ -246,11 +255,28 @@ def make_interface(
         description="Query an LLM about information from your documents.",
         allow_flagging="never",
         additional_inputs=[
-            gr.Slider(1, 10, value=5, step=1, label="Top k"),
-            gr.Slider(0.1, 1, value=0.9, step=0.1, label="Top p"),
-            gr.Slider(0.1, 1, value=0.5, step=0.1, label="Temp"),
+            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold"),
+            gr.Slider(
+                1,
+                10,
+                value=5,
+                step=1,
+                label="Top k",
+                info="LLM Parameter. A higher value will produce more varied text",
+            ),
+            gr.Slider(
+                0.1, 1, value=0.9, step=0.1, label="Top p", info="LLM Parameter.", visible=False
+            ),
+            gr.Slider(
+                0.1,
+                1,
+                value=0.5,
+                step=0.1,
+                label="Temp",
+                info="LLM Parameter. Higher values increase the randomness of the answer",
+            ),
         ],
-        additional_inputs_accordion=gr.Accordion(label="LLM Settings", open=False),
+        additional_inputs_accordion=gr.Accordion(label="Settings", open=False),
     )
 
     semantic_retrieval_ui = gr.Interface(
