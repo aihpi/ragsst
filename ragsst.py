@@ -38,6 +38,7 @@ class RAGTools:
         )
         self.collection_name = collection_name
         if self.check_initdb_conditions():
+            logger.debug("Init DB contitions are met")
             self.make_collection(data_path=self.data_path, collection_name=self.collection_name)
         else:
             self.collection = self.vs_client.get_collection(
@@ -233,7 +234,10 @@ class RAGTools:
         return (
             os.path.exists(self.data_path)
             and os.listdir(self.data_path)
-            and (not os.path.exists(VECTOR_DB_PATH) or not os.listdir(VECTOR_DB_PATH))
+            and (
+                not os.path.exists(VECTOR_DB_PATH)
+                or not [f.path for f in os.scandir(VECTOR_DB_PATH) if f.is_dir()]
+            )
         )
 
 
