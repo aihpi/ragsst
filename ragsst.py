@@ -194,12 +194,13 @@ class RAGTools:
         return contextual_prompt
 
     def rag_query(
-        self, user_msg: str, sim_th: float, top_k: int, top_p: float, temp: float
+        self, user_msg: str, sim_th: float, nresults: int, top_k: int, top_p: float, temp: float
     ) -> str:
         logger.debug(
             f"rag_query args: sim_th: {sim_th}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
         )
-        relevant_text = self.get_relevant_text(user_msg, sim_th=sim_th)
+        relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
+        logger.debug(f"\nRelevant Context:\n{relevant_text}")
         if not relevant_text:
             return "Relevant passage not found. Try lowering the relevance threshold."
         context_query = self.get_context_prompt(user_msg, relevant_text)
@@ -260,6 +261,7 @@ def make_interface(
         allow_flagging="never",
         additional_inputs=[
             gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold"),
+            gr.Slider(1, 5, value=3, step=1, label="Top n Results"),
             gr.Slider(
                 1,
                 10,
