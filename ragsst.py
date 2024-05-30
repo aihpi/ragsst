@@ -38,6 +38,7 @@ class RAGTools:
         )
         self.collection_name = collection_name
         if self.check_initdb_conditions():
+            logger.debug("Init DB contitions are met")
             self.make_collection(data_path=self.data_path, collection_name=self.collection_name)
         else:
             self.collection = self.vs_client.get_collection(
@@ -102,8 +103,8 @@ class RAGTools:
     ) -> None:
         """Create vector store collection from a set of documents"""
 
-        print("Populating emeddings database...")
-        print(f"Collection: {collection_name}")
+        logger.info(f"Documents Path: {data_path} | Collection Name: {collection_name}")
+        logger.info("Populating embeddings database...")
 
         self.collection = self.vs_client.get_or_create_collection(
             name=collection_name,
@@ -112,7 +113,7 @@ class RAGTools:
         )
 
         files = list_files(data_path, extensions=('.txt', '.pdf'))
-        print(f"Found files: {', '.join(files)} ...")
+        logger.info(f"Files found: {', '.join([f.replace(data_path, '') for f  in files])}")
 
         if skip_included_files:
             sources = {m.get('source') for m in self.collection.get().get('metadatas')}
@@ -121,15 +122,14 @@ class RAGTools:
             _, file_name = os.path.split(f)
 
             if skip_included_files and file_name in sources:
-                print(file_name, "Already in Vector-DB, skipping...")
+                logger.info(f"{file_name} Already in Vector-DB, skipping...")
                 continue
 
-            print(f"\nReading and splitting {file_name} ...")
+            logger.info(f"Reading and splitting {file_name} ...")
             text = read_file(f)
             chunks = split_text(text)
-            print("Resulting segments:", len(chunks))
-
-            print(f"\nEmbedding and storing {file_name} ...")
+            logger.info(f"Resulting segment count: {len(chunks)}")
+            logger.info(f"Embedding and storing {file_name} ...")
 
             for i, c in tqdm(enumerate(chunks, 1), total=len(chunks)):
                 self.collection.add(
@@ -192,8 +192,16 @@ class RAGTools:
 
         return contextual_prompt
 
-    def rag_query(self, user_msg: str, top_k: int, top_p: float, temp: float) -> str:
-        relevant_text = self.get_relevant_text(user_msg, sim_th=0.4)
+    def rag_query(
+        self, user_msg: str, sim_th: float, nresults: int, top_k: int, top_p: float, temp: float
+    ) -> str:
+        logger.debug(
+            f"rag_query args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
+        )
+        relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
+        logger.debug(f"\nRelevant Context:\n{relevant_text}")
+        if not relevant_text:
+            return "Relevant passage not found. Try lowering the relevance threshold."
         context_query = self.get_context_prompt(user_msg, relevant_text)
         bot_response = self.llm_generate(context_query, top_k=top_k, top_p=top_p, temp=temp)
         return bot_response
@@ -201,6 +209,8 @@ class RAGTools:
     # ToDo
     def rag_chat(self, user_msg: str, history: List, top_k: int, top_p: float, temp: float) -> str:
         relevant_text = self.get_relevant_text(user_msg, sim_th=0.4)
+        if not relevant_text:
+            return "Relevant passage not found"
         context_query = self.get_context_prompt(user_msg, relevant_text)
         bot_response = self.llm_generate(context_query, top_k=top_k, top_p=top_p, temp=temp)
         return bot_response
@@ -224,7 +234,10 @@ class RAGTools:
         return (
             os.path.exists(self.data_path)
             and os.listdir(self.data_path)
-            and (not os.path.exists(VECTOR_DB_PATH) or not os.listdir(VECTOR_DB_PATH))
+            and (
+                not os.path.exists(VECTOR_DB_PATH)
+                or not [f.path for f in os.scandir(VECTOR_DB_PATH) if f.is_dir()]
+            )
         )
 
 
@@ -246,11 +259,29 @@ def make_interface(
         description="Query an LLM about information from your documents.",
         allow_flagging="never",
         additional_inputs=[
-            gr.Slider(1, 10, value=5, step=1, label="Top k"),
-            gr.Slider(0.1, 1, value=0.9, step=0.1, label="Top p"),
-            gr.Slider(0.1, 1, value=0.5, step=0.1, label="Temp"),
+            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold"),
+            gr.Slider(1, 5, value=3, step=1, label="Top n Results"),
+            gr.Slider(
+                1,
+                10,
+                value=5,
+                step=1,
+                label="Top k",
+                info="LLM Parameter. A higher value will produce more varied text",
+            ),
+            gr.Slider(
+                0.1, 1, value=0.9, step=0.1, label="Top p", info="LLM Parameter.", visible=False
+            ),
+            gr.Slider(
+                0.1,
+                1,
+                value=0.5,
+                step=0.1,
+                label="Temp",
+                info="LLM Parameter. Higher values increase the randomness of the answer",
+            ),
         ],
-        additional_inputs_accordion=gr.Accordion(label="LLM Settings", open=False),
+        additional_inputs_accordion=gr.Accordion(label="Settings", open=False),
     )
 
     semantic_retrieval_ui = gr.Interface(
