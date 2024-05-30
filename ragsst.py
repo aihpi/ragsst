@@ -103,8 +103,8 @@ class RAGTools:
     ) -> None:
         """Create vector store collection from a set of documents"""
 
-        print("Populating emeddings database...")
-        print(f"Collection: {collection_name}")
+        logger.info(f"Documents Path: {data_path} | Collection Name: {collection_name}")
+        logger.info("Populating embeddings database...")
 
         self.collection = self.vs_client.get_or_create_collection(
             name=collection_name,
@@ -113,7 +113,7 @@ class RAGTools:
         )
 
         files = list_files(data_path, extensions=('.txt', '.pdf'))
-        print(f"Found files: {', '.join(files)} ...")
+        logger.info(f"Files found: {', '.join([f.replace(data_path, '') for f  in files])}")
 
         if skip_included_files:
             sources = {m.get('source') for m in self.collection.get().get('metadatas')}
@@ -122,15 +122,14 @@ class RAGTools:
             _, file_name = os.path.split(f)
 
             if skip_included_files and file_name in sources:
-                print(file_name, "Already in Vector-DB, skipping...")
+                logger.info(f"{file_name} Already in Vector-DB, skipping...")
                 continue
 
-            print(f"\nReading and splitting {file_name} ...")
+            logger.info(f"Reading and splitting {file_name} ...")
             text = read_file(f)
             chunks = split_text(text)
-            print("Resulting segments:", len(chunks))
-
-            print(f"\nEmbedding and storing {file_name} ...")
+            logger.info(f"Resulting segment count: {len(chunks)}")
+            logger.info(f"Embedding and storing {file_name} ...")
 
             for i, c in tqdm(enumerate(chunks, 1), total=len(chunks)):
                 self.collection.add(
@@ -197,7 +196,7 @@ class RAGTools:
         self, user_msg: str, sim_th: float, nresults: int, top_k: int, top_p: float, temp: float
     ) -> str:
         logger.debug(
-            f"rag_query args: sim_th: {sim_th}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
+            f"rag_query args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
         )
         relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
         logger.debug(f"\nRelevant Context:\n{relevant_text}")
