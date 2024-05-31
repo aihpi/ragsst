@@ -1,13 +1,13 @@
 
 # RAGSST
 
-## Retrieval Augmented Generation and Semantic-search Tools
+## Retrieval Augmented Generation and Semantic-search Tool
 
-A set of quick start tool to test and use as basis for various document-related use cases locally:
+A quick start tool to test and use as basis for various document-related use cases locally:
 
 - Rag: Prompt an LLM that uses relevant context to answer your queries
-- Semantic Retrieval: Retrieve relevant passages from documents showing sources and relevance.
-- Rag Chat: Interact with LLM making use of retrieval and history
+- Semantic Retrieval: Retrieve relevant passages from documents showing sources and relevance
+- Rag Chat: Interact with an LLM making use of retrieval and history
 - LLM Chat: Simply chat and test a local LLM, without document context
 
 
@@ -93,11 +93,11 @@ Linters:
 
 #### Additional Input parameters for the LLMs
 
-- Top k: Ranks the output tokens in descending order of probability, selects the first k tokens to create a new distribution, and it samples the output from it. Higher values result in more diverse answers, and lower values will produce more conservative answers. ([0, 10]. Default: 5)
+- Top k: Ranks the output tokens in descending order of probability, selects the first k tokens to create a new distribution, and it samples the output from it. Higher values result in more diverse answers, and lower values will produce more conservative answers.
 
-- Top p: Works together with Top k, but instead of selecting a fixed number of tokens, it selects enough tokens to cover the given cumulative probability. A higher value will produce more varied text, and a lower value will lead to more focused and conservative answers. ([0.1, 1] Default: 0.9)
+- Top p: Works together with Top k, but instead of selecting a fixed number of tokens, it selects enough tokens to cover the given cumulative probability. A higher value will produce more varied text, and a lower value will lead to more focused and conservative answers.
 
-- Temp: This affects the “randomness” of the answers  by scaling the probability distribution of the output elements. Increasing the temperature will make the model answer more creatively. ([0.1, 1]. Default: 0.5)
+- Temp: This affects the “randomness” of the answers  by scaling the probability distribution of the output elements. Increasing the temperature will make the model answer more creatively.
 
 ---
 
