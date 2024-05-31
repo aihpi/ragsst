@@ -302,34 +302,31 @@ def make_interface(
     makedb: Callable,
 ) -> Any:
 
+    # Parameter information
+    pinfo = {
+        "Rth": "Set the relevance level for the content retrieval",
+        "TopnR": "Select the maximum number of passages to retrieve",
+        "Top k": "LLM Parameter. A higher value will produce more varied text",
+        "Top p": "LLM Parameter. A higher value will produce more varied text",
+        "Temp": "LLM Parameter. Higher values increase the randomness of the answer",
+    }
+
     rag_query_ui = gr.Interface(
         rag_query,
         gr.Textbox(label="Query"),
-        gr.Textbox(label="Answer", lines=10),
+        gr.Textbox(label="Answer", lines=14),
         description="Query an LLM about information from your documents.",
         allow_flagging="never",
         additional_inputs=[
-            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold"),
-            gr.Slider(1, 5, value=3, step=1, label="Top n Results"),
             gr.Slider(
-                1,
-                10,
-                value=5,
-                step=1,
-                label="Top k",
-                info="LLM Parameter. A higher value will produce more varied text",
+                0, 1, value=0.3, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
             ),
+            gr.Slider(1, 5, value=3, step=1, label="Top n results", info=pinfo.get("TopnR")),
+            gr.Slider(1, 10, value=5, step=1, label="Top k", info=pinfo.get("Top k")),
             gr.Slider(
-                0.1, 1, value=0.9, step=0.1, label="Top p", info="LLM Parameter.", visible=False
+                0.1, 1, value=0.9, step=0.1, label="Top p", info=pinfo.get("Top p"), visible=False
             ),
-            gr.Slider(
-                0.1,
-                1,
-                value=0.5,
-                step=0.1,
-                label="Temp",
-                info="LLM Parameter. Higher values increase the randomness of the answer",
-            ),
+            gr.Slider(0.1, 1, value=0.3, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="Settings", open=False),
     )
@@ -341,8 +338,8 @@ def make_interface(
         description="Find information in your documents.",
         allow_flagging="manual",
         additional_inputs=[
-            gr.Slider(1, 5, value=2, step=1, label="Top n Results"),
-            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold"),
+            gr.Slider(1, 5, value=2, step=1, label="Top n results", info=pinfo.get("TopnR")),
+            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")),
         ],
         additional_inputs_accordion=gr.Accordion(label="Retrieval Settings", open=False),
     )
@@ -352,27 +349,15 @@ def make_interface(
         description="Query and interact with an LLM considering your documents information.",
         chatbot=gr.Chatbot(height=500),
         additional_inputs=[
-            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold"),
-            gr.Slider(1, 5, value=3, step=1, label="Top n Results"),
             gr.Slider(
-                1,
-                10,
-                value=3,
-                step=1,
-                label="Top k",
-                info="LLM Parameter. A higher value will produce more varied text",
+                0, 1, value=0.4, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
             ),
+            gr.Slider(1, 5, value=3, step=1, label="Top n results", info=pinfo.get("TopnR")),
+            gr.Slider(1, 10, value=3, step=1, label="Top k", info=pinfo.get("Top k")),
             gr.Slider(
-                0.1, 1, value=0.9, step=0.1, label="Top p", info="LLM Parameter.", visible=False
+                0.1, 1, value=0.9, step=0.1, label="Top p", info=pinfo.get("Top p"), visible=False
             ),
-            gr.Slider(
-                0.1,
-                1,
-                value=0.3,
-                step=0.1,
-                label="Temp",
-                info="LLM Parameter. Higher values increase the randomness of the answer",
-            ),
+            gr.Slider(0.1, 1, value=0.3, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="Settings", open=False),
     )
@@ -382,9 +367,9 @@ def make_interface(
         description="Simply chat with the LLM, without document context.",
         chatbot=gr.Chatbot(height=500),
         additional_inputs=[
-            gr.Slider(1, 10, value=5, step=1, label="Top K"),
-            gr.Slider(0.1, 1, value=0.9, step=0.1, label="Top p"),
-            gr.Slider(0.1, 1, value=0.5, step=0.1, label="Temp"),
+            gr.Slider(1, 10, value=5, step=1, label="Top k", info=pinfo.get("Top k")),
+            gr.Slider(0.1, 1, value=0.9, step=0.1, label="Top p", info=pinfo.get("Top p")),
+            gr.Slider(0.1, 1, value=0.5, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="LLM Settings", open=False),
     )
@@ -402,7 +387,7 @@ def make_interface(
     gui = gr.TabbedInterface(
         [rag_query_ui, semantic_retrieval_ui, rag_chat_ui, chat_ui, embed_docs_ui],
         ["RAG Query", "Semantic Retrieval", "RAG Chat", "Chat", "Make Db"],
-        title="Local RAGSST",
+        title="Local RAG Tool",
     )
 
     return gui
