@@ -30,6 +30,7 @@ class RAGTools:
         self.llm_base_url = llm_base_url
         self.max_conversation_length = 10
         self.conversation = deque(maxlen=self.max_conversation_length)
+        self.rag_conversation = deque(maxlen=self.max_conversation_length)
         self.data_path = data_path
         self.embedding_model = embedding_model
         self.vs_client = chromadb.PersistentClient(path=VECTOR_DB_PATH)
@@ -180,17 +181,29 @@ class RAGTools:
 
     # ============== Retrieval Augemented Generation ==============================
 
-    def get_context_prompt(self, question: str, context: str) -> str:
+    def get_context_prompt(self, query: str, context: str) -> str:
         contextual_prompt = (
-            "Use the following context to answer the question at the end. "
+            "Use the following context to answer the query at the end. "
             "Keep the answer as concise as possible.\n"
             "Context:\n"
             f"{context}"
-            "\nQuestion:\n"
-            f"{question}"
+            "\nQuery:\n"
+            f"{query}"
         )
 
         return contextual_prompt
+
+    def get_condenser_prompt(self, query: str, chat_history: List) -> str:
+        history = '\n'.join(list(chat_history))
+        condenser_prompt = (
+            "Given the following chat history and a follow up query, rephrase the follow up query to be a standalone query. "
+            "Just create the standalone query without commentary. Use the same language."
+            "\nChat history:\n"
+            f"{history}"
+            f"\nFollow Up Query: {query}"
+            "\nStandalone Query:"
+        )
+        return condenser_prompt
 
     def rag_query(
         self, user_msg: str, sim_th: float, nresults: int, top_k: int, top_p: float, temp: float
@@ -199,20 +212,57 @@ class RAGTools:
             f"rag_query args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
         )
         relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
-        logger.debug(f"\nRelevant Context:\n{relevant_text}")
+        # logger.debug(f"\nRelevant Context:\n{relevant_text}")
         if not relevant_text:
             return "Relevant passage not found. Try lowering the relevance threshold."
-        context_query = self.get_context_prompt(user_msg, relevant_text)
-        bot_response = self.llm_generate(context_query, top_k=top_k, top_p=top_p, temp=temp)
+        contextualized_query = self.get_context_prompt(user_msg, relevant_text)
+        bot_response = self.llm_generate(contextualized_query, top_k=top_k, top_p=top_p, temp=temp)
         return bot_response
 
-    # ToDo
-    def rag_chat(self, user_msg: str, history: List, top_k: int, top_p: float, temp: float) -> str:
-        relevant_text = self.get_relevant_text(user_msg, sim_th=0.4)
+    def rag_chat(
+        self,
+        user_msg: str,
+        ui_hist: List,
+        sim_th: float,
+        nresults: int,
+        top_k: int,
+        top_p: float,
+        temp: float,
+    ) -> str:
+        logger.debug(
+            f"rag_chat args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
+        )
+        MSG_NO_CONTEXT = "Relevant passage not found."
+
+        if not self.rag_conversation:
+            relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
+            if not relevant_text:
+                return MSG_NO_CONTEXT
+            self.rag_conversation.append('Query: ' + user_msg)
+            contextualized_query = self.get_context_prompt(user_msg, relevant_text)
+            bot_response = self.llm_generate(
+                contextualized_query, top_k=top_k, top_p=top_p, temp=temp
+            )
+            self.rag_conversation.append('Answer: ' + bot_response)
+            return bot_response
+
+        condenser_prompt = self.get_condenser_prompt(user_msg, self.rag_conversation)
+        logger.debug(f"\nCondenser prompt:\n{condenser_prompt}")
+
+        standalone_query = self.llm_generate(condenser_prompt, top_k=top_k, top_p=top_p, temp=temp)
+        logger.debug(f"Standalone query: {standalone_query}")
+
+        relevant_text = self.get_relevant_text(standalone_query, nresults=nresults, sim_th=sim_th)
         if not relevant_text:
-            return "Relevant passage not found"
-        context_query = self.get_context_prompt(user_msg, relevant_text)
-        bot_response = self.llm_generate(context_query, top_k=top_k, top_p=top_p, temp=temp)
+            return MSG_NO_CONTEXT
+        contextualized_standalone_query = self.get_context_prompt(standalone_query, relevant_text)
+        # logger.debug(f"Contextualized new query:\n{contextualized_standalone_query}")
+
+        bot_response = self.llm_generate(
+            contextualized_standalone_query, top_k=top_k, top_p=top_p, temp=temp
+        )
+        self.rag_conversation.append('Query:\n' + standalone_query)
+        self.rag_conversation.append('Answer:\n' + bot_response)
         return bot_response
 
     # ============== LLM chat w/o Document Context ================================
@@ -252,34 +302,31 @@ def make_interface(
     makedb: Callable,
 ) -> Any:
 
+    # Parameter information
+    pinfo = {
+        "Rth": "Set the relevance level for the content retrieval",
+        "TopnR": "Select the maximum number of passages to retrieve",
+        "Top k": "LLM Parameter. A higher value will produce more varied text",
+        "Top p": "LLM Parameter. A higher value will produce more varied text",
+        "Temp": "LLM Parameter. Higher values increase the randomness of the answer",
+    }
+
     rag_query_ui = gr.Interface(
         rag_query,
         gr.Textbox(label="Query"),
-        gr.Textbox(label="Answer", lines=10),
+        gr.Textbox(label="Answer", lines=14),
         description="Query an LLM about information from your documents.",
         allow_flagging="never",
         additional_inputs=[
-            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold"),
-            gr.Slider(1, 5, value=3, step=1, label="Top n Results"),
             gr.Slider(
-                1,
-                10,
-                value=5,
-                step=1,
-                label="Top k",
-                info="LLM Parameter. A higher value will produce more varied text",
+                0, 1, value=0.3, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
             ),
+            gr.Slider(1, 5, value=3, step=1, label="Top n results", info=pinfo.get("TopnR")),
+            gr.Slider(1, 10, value=5, step=1, label="Top k", info=pinfo.get("Top k")),
             gr.Slider(
-                0.1, 1, value=0.9, step=0.1, label="Top p", info="LLM Parameter.", visible=False
+                0.1, 1, value=0.9, step=0.1, label="Top p", info=pinfo.get("Top p"), visible=False
             ),
-            gr.Slider(
-                0.1,
-                1,
-                value=0.5,
-                step=0.1,
-                label="Temp",
-                info="LLM Parameter. Higher values increase the randomness of the answer",
-            ),
+            gr.Slider(0.1, 1, value=0.3, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="Settings", open=False),
     )
@@ -291,8 +338,8 @@ def make_interface(
         description="Find information in your documents.",
         allow_flagging="manual",
         additional_inputs=[
-            gr.Slider(1, 5, value=2, step=1, label="Top n Results"),
-            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold"),
+            gr.Slider(1, 5, value=2, step=1, label="Top n results", info=pinfo.get("TopnR")),
+            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")),
         ],
         additional_inputs_accordion=gr.Accordion(label="Retrieval Settings", open=False),
     )
@@ -300,23 +347,29 @@ def make_interface(
     rag_chat_ui = gr.ChatInterface(
         rag_chat,
         description="Query and interact with an LLM considering your documents information.",
-        chatbot=gr.Chatbot(height=700),
+        chatbot=gr.Chatbot(height=500),
         additional_inputs=[
-            gr.Slider(1, 10, value=3, step=1, label="Top K"),
-            gr.Slider(0.1, 1, value=0.9, step=0.1, label="Top p"),
-            gr.Slider(0.1, 1, value=0.3, step=0.1, label="Temp"),
+            gr.Slider(
+                0, 1, value=0.4, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
+            ),
+            gr.Slider(1, 5, value=3, step=1, label="Top n results", info=pinfo.get("TopnR")),
+            gr.Slider(1, 10, value=3, step=1, label="Top k", info=pinfo.get("Top k")),
+            gr.Slider(
+                0.1, 1, value=0.9, step=0.1, label="Top p", info=pinfo.get("Top p"), visible=False
+            ),
+            gr.Slider(0.1, 1, value=0.3, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
-        additional_inputs_accordion=gr.Accordion(label="LLM Settings", open=False),
+        additional_inputs_accordion=gr.Accordion(label="Settings", open=False),
     )
 
     chat_ui = gr.ChatInterface(
         chat,
         description="Simply chat with the LLM, without document context.",
-        chatbot=gr.Chatbot(height=700),
+        chatbot=gr.Chatbot(height=500),
         additional_inputs=[
-            gr.Slider(1, 10, value=5, step=1, label="Top K"),
-            gr.Slider(0.1, 1, value=0.9, step=0.1, label="Top p"),
-            gr.Slider(0.1, 1, value=0.5, step=0.1, label="Temp"),
+            gr.Slider(1, 10, value=5, step=1, label="Top k", info=pinfo.get("Top k")),
+            gr.Slider(0.1, 1, value=0.9, step=0.1, label="Top p", info=pinfo.get("Top p")),
+            gr.Slider(0.1, 1, value=0.5, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="LLM Settings", open=False),
     )
@@ -334,7 +387,7 @@ def make_interface(
     gui = gr.TabbedInterface(
         [rag_query_ui, semantic_retrieval_ui, rag_chat_ui, chat_ui, embed_docs_ui],
         ["RAG Query", "Semantic Retrieval", "RAG Chat", "Chat", "Make Db"],
-        title="Local RAGSST",
+        title="Local RAG Tool",
     )
 
     return gui

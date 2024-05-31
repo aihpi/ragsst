@@ -3,26 +3,20 @@ The AI Service Center Berlin-Brandenburg is a project at the Hasso Plattner Inst
  
 We support start-ups, companies, public institutions, students and researchers in developing, operating and using AI applications. To this end, we provide the necessary infrastructure, training and advice free of charge.
 
-AI Infrastructure
-Our AI infrastructure offers platforms for training, inference and system integration. This enables us to create a foundation for the development and transfer of AI applications. The AI infrastructure builds on existing HPI computing resources and operating concepts such as the Future SOC Lab.
+AI Infrastructure: Our AI infrastructure offers platforms for training, inference and system integration. This enables us to create a foundation for the development and transfer of AI applications. The AI infrastructure builds on existing HPI computing resources and operating concepts such as the Future SOC Lab.
 
-AI Education Offerings
-Our AI education offerings range from lectures and MOOCs to workshops that allow you to deepen and expand your knowledge and skills around AI. 
+AI Education Offerings: Our AI education offerings range from lectures and MOOCs to workshops that allow you to deepen and expand your knowledge and skills around AI. We offer free educational programs in Potsdam, Berlin and online.
 
-AI Advisory
-Our advisory services address your individual AI use cases and support you in implementing them. Our consultations take place in the context of basic research and scientific pilot projects.
-
-AI Education Offerings
-We offer free educational programs in Potsdam, Berlin and online.
+AI Advisory: Our advisory services address your individual AI use cases and support you in implementing them. Our consultations take place in the context of basic research and scientific pilot projects.
 
 AI Workshops
-Our weekly AI workshops take place in small groups so that teachers can respond individually to participants and their different levels of prior knowledge.
+The AI Service Center weekly AI workshops take place in small groups so that teachers can respond individually to participants and their different levels of prior knowledge.
 
-AI Maker Sessions 
-If you want to deepen your knowledge and skills in the field of artificial intelligence, our AI maker sessions are the right place for you. The workshop series offers a comprehensive insight into various AI-related topics such as training and evaluation of machine learning models, neural network architectures and MLOps. In addition, participants will be prepared for our planned certification program for AI experts. The workshops take place every Tuesday and Thursday evening. Depending on the workshop, in Potsdam, Berlin or online.   
+AI Maker Sessions
+If you want to deepen your knowledge and skills in the field of artificial intelligence, our AI maker sessions are the right place for you. The workshop series offers a comprehensive insight into various AI-related topics such as training and evaluation of machine learning models, neural network architectures and MLOps. In addition, participants will be prepared for our planned certification program for AI experts. The workshops take place every Tuesday and Thursday evening. Depending on the workshop, in Potsdam, Berlin or online.
 
 Paper Reading Sessions
-Our weekly paper reading sessions are aimed at AI users, data scientists and software engineers. These workshops cover the latest developments in automatic natural language processing, computer vision and other related fields.  The sessions take place online every Wednesday afternoon.
+The AI Service Center weekly paper reading sessions are aimed at AI users, data scientists and software engineers. These workshops cover the latest developments in automatic natural language processing, computer vision and other related fields.  The sessions take place online every Wednesday afternoon.
 
 Detailed information on the individual workshop content can be found in our AI Maker Community on Slack. There we also offer monthly summaries of research results and developments around AI as well as the opportunity to network with other AI enthusiasts.
 
@@ -33,33 +27,34 @@ AI Certificate
 We are preparing an AI certificate that will certify your knowledge of AI topics.
 
 AI Lectures
-We invite you to recurring lectures on AI topics on site at HPI in Potsdam. 
+We invite you to recurring lectures on AI topics on site at HPI in Potsdam.
 
 Guest Talks 
-On HPI tele-TASK you will find in-depth talks on current AI topics from research, development and business under the category Guest Talks. 
+On HPI tele-TASK you will find in-depth talks on current AI topics from research, development and business under the category Guest Talks.
 
 Lectures 
-We also offer our own lectures, which are aimed at a broad audience from society and business without requiring a lot of prior knowledge, providing a basic classification of AI and explaining the opportunities and risks of AI. 
+At the AI Service Center we also offer our own lectures, which are aimed at a broad audience from society and business without requiring a lot of prior knowledge, providing a basic classification of AI and explaining the opportunities and risks of AI.
 
 Were you unable to find the right educational program for you? Then feel free to take a look at the School of Design Thinking, the School of Entrepreneurship, the Mittelstand Digital Center Berlin and the HPI Research Schools.
 
 
 AI Advisory Services
-We offer individual meetings in which we discuss your specific application. The meetings take place either online or on site in Potsdam or Berlin.
+At the AI Service Center we offer individual meetings in which we discuss your specific application. The meetings take place either online or on site in Potsdam or Berlin.
 
 AI Advisory
-With our AI advisory, we support you free of charge with the implementation of your own AI applications. In particular, we can advise you on the use and operation of computing infrastructure and support you in considering on-premise or cloud operation. We also provide methodological advice on the selection of AI model architectures, AI software frameworks and the implementation of AI applications, taking into account the latest scientific research findings.
+With the AI Service Center AI advisory, we support you free of charge with the implementation of your own AI applications. In particular, we can advise you on the use and operation of computing infrastructure and support you in considering on-premise or cloud operation. We also provide methodological advice on the selection of AI model architectures, AI software frameworks and the implementation of AI applications, taking into account the latest scientific research findings.
 
 AI Pilot Projects
-Pilot projects go beyond basic consulting. We define pilot projects as the prototypical implementation of ideas that you bring to us and that we implement together with you. 
+Pilot projects at the AI Service Center go beyond basic consulting. We define pilot projects as the prototypical implementation of ideas that you bring to us and that we implement together with you. 
 
 For AI pilot projects our advisory consists of the following steps:
 Understanding and identifying the use case 
-Specifying the use case 
-Developing a solution together 
-Finalizing and documenting the pilot project 
+Specify the use case and requirements
+Working together to develop a solution
+Finalizing and documenting the pilot project
+
 Cooperations
-If you do not have a specific AI use case that you would like to implement with us, but still want to work with us, we offer you cooperation in the form of co-organized networking events or educational offerings such as workshops, lectures or Massive Open Online Courses. 
+If you do not have a specific AI use case that you would like to implement with us, but still want to work with us, we offer you cooperation in the form of co-organized networking events or educational offerings such as workshops, lectures or Massive Open Online Courses.
 
 Start-up Support
 If you approach us on behalf of a start-up, we offer to accompany you during your development process and also support you in networking through our AI advisory, pilot projects and collaborations.
