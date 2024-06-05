@@ -2,14 +2,23 @@ import os
 from pypdf import PdfReader
 
 
-def list_files(path, extensions=''):
+def list_files(path, walksubdirs=True, extensions=''):
     """Returns a List of strings with the file names on the given path"""
 
-    files_list = [
-        os.path.join(path, f)
-        for f in os.listdir(path)
-        if os.path.isfile(os.path.join(path, f)) and f.endswith(extensions)
-    ]
+    if walksubdirs:
+        files_list = [
+            os.path.join(root, f)
+            for root, dirs, files in os.walk(path)
+            for f in files
+            if f.endswith(extensions)
+        ]
+    else:
+        files_list = [
+            os.path.join(path, f)
+            for f in os.listdir(path)
+            if os.path.isfile(os.path.join(path, f)) and f.endswith(extensions)
+        ]
+
     return sorted(files_list)
 
 
