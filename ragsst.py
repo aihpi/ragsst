@@ -105,7 +105,6 @@ class RAGTools:
         """Create vector store collection from a set of documents"""
 
         logger.info(f"Documents Path: {data_path} | Collection Name: {collection_name}")
-        logger.info("Populating embeddings database...")
 
         self.collection = self.vs_client.get_or_create_collection(
             name=collection_name,
@@ -114,7 +113,9 @@ class RAGTools:
         )
 
         files = list_files(data_path, extensions=('.txt', '.pdf'))
-        logger.info(f"Files found: {', '.join([f.replace(data_path, '') for f  in files])}")
+        logger.info(f"{len(files)} files found.")
+        logger.info(f"Files: {', '.join([f.replace(data_path, '') for f  in files])}")
+        logger.info("Populating embeddings database...")
 
         if skip_included_files:
             sources = {m.get('source') for m in self.collection.get().get('metadatas')}
