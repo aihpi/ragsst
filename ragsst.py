@@ -46,7 +46,7 @@ class RAGTools:
                 name=self.collection_name, embedding_function=self.embedding_func
             )
 
-    # ============== LLM (Ollama) =================================================
+    # ============== LLM (Ollama) ==============================================
 
     def llm_generate(
         self, prompt: str, top_k: int = 5, top_p: float = 0.9, temp: float = 0.2
@@ -92,7 +92,7 @@ class RAGTools:
         except Exception as e:
             logger.error(f"Exception: {e}\nResponse:{response_dic}")
 
-    # ============== Vector Store =================================================
+    # ============== Vector Store ==============================================
 
     def make_collection(
         self,
@@ -102,8 +102,13 @@ class RAGTools:
     ) -> None:
         """Create vector store collection from a set of documents"""
 
-        logger.info(f"Documents Path: {data_path} | Collection Name: {collection_name}")
+        logger.info(
+            f"Documents Path: {data_path} | Collection Name: {collection_name} | Embedding Model: {self.embedding_model}"
+        )
 
+        self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name=self.embedding_model
+        )
         self.collection = self.vs_client.get_or_create_collection(
             name=collection_name,
             embedding_function=self.embedding_func,
@@ -138,7 +143,9 @@ class RAGTools:
                     metadatas={"source": file_name, "part": i},
                 )
 
-    # ============== Semantic Search / Retrieval ==================================
+        logger.debug(f"Stored Collections: {self.vs_client.list_collections()}")
+
+    # ============== Semantic Search / Retrieval ===============================
 
     def retrieve_content_mockup(self, query, nresults=2, sim_th=0.25):
         return f"Some Snippet from documents related to {query}\nRelevance:0.7\nSource: holmes.pdf | part: n"
@@ -149,6 +156,7 @@ class RAGTools:
         """Get list of relevant content from a collection including similarity and sources"""
 
         query_result = self.collection.query(query_texts=query, n_results=nresults)
+
         docs_selection = []
 
         for i in range(len(query_result.get('ids')[0])):
@@ -178,7 +186,7 @@ class RAGTools:
             return ''.join(relevant_docs)
         return ''.join(docs)
 
-    # ============== Retrieval Augemented Generation ==============================
+    # ============== Retrieval Augemented Generation ===========================
 
     def get_context_prompt(self, query: str, context: str) -> str:
         contextual_prompt = (
@@ -264,13 +272,13 @@ class RAGTools:
         self.rag_conversation.append('Answer:\n' + bot_response)
         return bot_response
 
-    # ============== LLM chat w/o Document Context ================================
+    # ============== LLM chat w/o Document Context =============================
 
     def chat(self, user_msg, history, top_k, top_p, temp):
         bot_response = self.llm_chat(user_msg, top_k=top_k, top_p=top_p, temp=temp)
         return bot_response
 
-    # ============== Utils ========================================================
+    # ============== Utils =====================================================
 
     def llm_mockup(self, prompt, top_k=1, top_p=0.9, temp=0.5):
         return choice(["Yes!", "Not sure", "It depends", "42"])
@@ -288,6 +296,25 @@ class RAGTools:
                 or not [f.path for f in os.scandir(VECTOR_DB_PATH) if f.is_dir()]
             )
         )
+
+    def set_model(self, llm: str):
+        self.model = llm
+        logger.info(f"Chosen Model: {self.model}")
+
+    def set_embeddings_model(self, emb_model: str):
+        self.embedding_model = emb_model
+        self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name=self.embedding_model
+        )
+        logger.debug(f"Embedding Model: {self.embedding_model}")
+
+    def set_data_path(self, data_path: str):
+        self.data_path = data_path
+        logger.debug(f"Data Path: {self.data_path}")
+
+    def set_collection_name(self, collection_name: str):
+        self.collection_name = collection_name
+        logger.debug(f"Collection Name: {self.collection_name}")
 
 
 # ============== Interface ====================================================
@@ -369,21 +396,50 @@ def make_interface(ragsst: RAGTools) -> Any:
         additional_inputs_accordion=gr.Accordion(label="LLM Settings", open=False),
     )
 
-    with gr.Blocks() as embed_docs_ui:
-        gr.Markdown(
-            "Make and populate the Embeddings Database (Vector Store) with your documents."
-        )
-        data_path = gr.Textbox(value=DATA_PATH, label="Documents Path")
-        collection_name = gr.Textbox(value=COLLECTION_NAME, label="Collection Name")
-        makedb_btn = gr.Button("Make Db")
-        text_output = gr.Textbox(label="Info")
-        makedb_btn.click(
-            fn=ragsst.make_collection, inputs=[data_path, collection_name], outputs=text_output
-        )
+    with gr.Blocks() as config_ui:
+        with gr.Row():
+            with gr.Column(scale=3):
+
+                def make_db(data_path, collection_name, embedding_model):
+                    ragsst.set_data_path(data_path)
+                    ragsst.set_collection_name(collection_name)
+                    ragsst.set_embeddings_model(embedding_model)
+                    ragsst.make_collection(data_path, collection_name)
+
+                gr.Markdown(
+                    "Make and populate the Embeddings Database (Vector Store) with your documents."
+                )
+                with gr.Row():
+                    data_path = gr.Textbox(value=DATA_PATH, label="Documents Path")
+                    collection_name = gr.Textbox(value=COLLECTION_NAME, label="Collection Name")
+                emb_model = gr.Dropdown(
+                    choices=[EMBEDDING_MODEL, "all-MiniLM-L6-v2", "multi-qa-MiniLM-L6-cos-v1"],
+                    value=EMBEDDING_MODEL,
+                    label="Embedding Model",
+                    interactive=True,
+                )
+                makedb_btn = gr.Button("Make Db", size='sm')
+                text_output = gr.Textbox(label="Info")
+                makedb_btn.click(
+                    fn=make_db,
+                    inputs=[data_path, collection_name, emb_model],
+                    outputs=text_output,
+                )
+
+            with gr.Column(scale=2):
+                gr.Markdown("Choose the Language Model")
+                model_name = gr.Dropdown(
+                    choices=[MODEL, "phi3", "mistral", "qwen", "dolphin-llama3", "deepseek-coder"],
+                    value=MODEL,
+                    label="LLM",
+                    interactive=True,
+                )
+                setllm_btn = gr.Button("Submit Choice", size='sm')
+                setllm_btn.click(fn=ragsst.set_model, inputs=model_name)
 
     gui = gr.TabbedInterface(
-        [rag_query_ui, semantic_retrieval_ui, rag_chat_ui, chat_ui, embed_docs_ui],
-        ["RAG Query", "Semantic Retrieval", "RAG Chat", "Chat", "Make Db"],
+        [rag_query_ui, semantic_retrieval_ui, rag_chat_ui, chat_ui, config_ui],
+        ["RAG Query", "Semantic Retrieval", "RAG Chat", "Chat", "Rag Tool Settings"],
         title="Local RAG Tool",
     )
 
