@@ -65,8 +65,7 @@ class RAGTools:
             return response_dic.get('response', '')
 
         except Exception as e:
-            logger.error(e)
-            raise
+            logger.error(f"Exception: {e}\nResponse:{response_dic}")
 
     def llm_chat(
         self, user_message: str, top_k: int = 5, top_p: float = 0.9, temp: float = 0.5
@@ -91,8 +90,7 @@ class RAGTools:
             return response.get('content', '')
 
         except Exception as e:
-            logger.error(e)
-            raise
+            logger.error(f"Exception: {e}\nResponse:{response_dic}")
 
     # ============== Vector Store =================================================
 
@@ -334,7 +332,9 @@ def make_interface(ragsst: RAGTools) -> Any:
         allow_flagging="manual",
         additional_inputs=[
             gr.Slider(1, 5, value=2, step=1, label="Top n results", info=pinfo.get("TopnR")),
-            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")),
+            gr.Slider(
+                0, 1, value=0.4, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
+            ),
         ],
         additional_inputs_accordion=gr.Accordion(label="Retrieval Settings", open=False),
     )
@@ -377,7 +377,9 @@ def make_interface(ragsst: RAGTools) -> Any:
         collection_name = gr.Textbox(value=COLLECTION_NAME, label="Collection Name")
         makedb_btn = gr.Button("Make Db")
         text_output = gr.Textbox(label="Info")
-        makedb_btn.click(fn=ragsst.make_collection, inputs=[data_path, collection_name], outputs=text_output)
+        makedb_btn.click(
+            fn=ragsst.make_collection, inputs=[data_path, collection_name], outputs=text_output
+        )
 
     gui = gr.TabbedInterface(
         [rag_query_ui, semantic_retrieval_ui, rag_chat_ui, chat_ui, embed_docs_ui],
