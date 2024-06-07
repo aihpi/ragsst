@@ -6,7 +6,7 @@ from tqdm import tqdm
 import requests, json
 from random import choice
 import gradio as gr
-from typing import List, Callable, Any
+from typing import List, Any
 from collections import deque
 from utils import list_files, read_file, split_text
 from parameters import DATA_PATH, VECTOR_DB_PATH, EMBEDDING_MODEL, COLLECTION_NAME
@@ -295,13 +295,7 @@ class RAGTools:
 # ============== Interface ====================================================
 
 
-def make_interface(
-    rag_query: Callable,
-    semantic_retrieval: Callable,
-    rag_chat: Callable,
-    chat: Callable,
-    makedb: Callable,
-) -> Any:
+def make_interface(ragsst: RAGTools) -> Any:
 
     # Parameter information
     pinfo = {
@@ -313,7 +307,7 @@ def make_interface(
     }
 
     rag_query_ui = gr.Interface(
-        rag_query,
+        ragsst.rag_query,
         gr.Textbox(label="Query"),
         gr.Textbox(label="Answer", lines=14),
         description="Query an LLM about information from your documents.",
@@ -333,7 +327,7 @@ def make_interface(
     )
 
     semantic_retrieval_ui = gr.Interface(
-        semantic_retrieval,
+        ragsst.retrieve_content_w_meta_info,
         gr.Textbox(label="Query"),
         gr.Textbox(label="Related Content", lines=20),
         description="Find information in your documents.",
@@ -346,7 +340,7 @@ def make_interface(
     )
 
     rag_chat_ui = gr.ChatInterface(
-        rag_chat,
+        ragsst.rag_chat,
         description="Query and interact with an LLM considering your documents information.",
         chatbot=gr.Chatbot(height=500),
         additional_inputs=[
@@ -364,7 +358,7 @@ def make_interface(
     )
 
     chat_ui = gr.ChatInterface(
-        chat,
+        ragsst.chat,
         description="Simply chat with the LLM, without document context.",
         chatbot=gr.Chatbot(height=500),
         additional_inputs=[
@@ -383,7 +377,7 @@ def make_interface(
         collection_name = gr.Textbox(value=COLLECTION_NAME, label="Collection Name")
         makedb_btn = gr.Button("Make Db")
         text_output = gr.Textbox(label="Info")
-        makedb_btn.click(fn=makedb, inputs=[data_path, collection_name], outputs=text_output)
+        makedb_btn.click(fn=ragsst.make_collection, inputs=[data_path, collection_name], outputs=text_output)
 
     gui = gr.TabbedInterface(
         [rag_query_ui, semantic_retrieval_ui, rag_chat_ui, chat_ui, embed_docs_ui],
@@ -398,11 +392,5 @@ if __name__ == "__main__":
 
     ragsst = RAGTools()
 
-    mpragst = make_interface(
-        ragsst.rag_query,
-        ragsst.retrieve_content_w_meta_info,
-        ragsst.rag_chat,
-        ragsst.chat,
-        ragsst.make_collection,
-    )
+    mpragst = make_interface(ragsst)
     mpragst.launch()
