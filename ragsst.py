@@ -92,6 +92,19 @@ class RAGTools:
         except Exception as e:
             logger.error(f"Exception: {e}\nResponse:{response_dic}")
 
+    def list_local_models(self) -> List:
+
+        url = self.llm_base_url + "/tags"
+
+        try:
+            r = requests.get(url)
+            response_dic = json.loads(r.text)
+            models_names = [model.get("name") for model in response_dic.get("models")]
+            return models_names
+
+        except Exception as e:
+            logger.error(f"Exception: {e}\nResponse:{response_dic}")
+
     # ============== Vector Store ==============================================
 
     def make_collection(
@@ -428,8 +441,11 @@ def make_interface(ragsst: RAGTools) -> Any:
 
             with gr.Column(scale=2):
                 gr.Markdown("Choose the Language Model")
+                model_choices = ragsst.list_local_models()
+                print(model_choices)
                 model_name = gr.Dropdown(
-                    choices=[MODEL, "phi3", "mistral", "qwen", "dolphin-llama3", "deepseek-coder"],
+                    choices=model_choices,
+                    allow_custom_value=True,
                     value=MODEL,
                     label="LLM",
                     interactive=True,
