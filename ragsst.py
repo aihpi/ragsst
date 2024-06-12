@@ -329,6 +329,12 @@ class RAGTools:
         self.collection_name = collection_name
         logger.debug(f"Collection Name: {self.collection_name}")
 
+    def clear_chat_hist(self) -> None:
+        self.conversation.clear()
+
+    def clear_ragchat_hist(self) -> None:
+        self.rag_conversation.clear()
+
 
 # ============== Interface ====================================================
 
@@ -362,6 +368,7 @@ def make_interface(ragsst: RAGTools) -> Any:
             gr.Slider(0.1, 1, value=0.3, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="Settings", open=False),
+        clear_btn=None,
     )
 
     semantic_retrieval_ui = gr.Interface(
@@ -377,9 +384,10 @@ def make_interface(ragsst: RAGTools) -> Any:
             ),
         ],
         additional_inputs_accordion=gr.Accordion(label="Retrieval Settings", open=False),
+        clear_btn=None,
     )
 
-    rag_chat_ui = gr.ChatInterface(
+    with gr.ChatInterface(
         ragsst.rag_chat,
         description="Query and interact with an LLM considering your documents information.",
         chatbot=gr.Chatbot(height=500),
@@ -395,9 +403,11 @@ def make_interface(ragsst: RAGTools) -> Any:
             gr.Slider(0.1, 1, value=0.3, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="Settings", open=False),
-    )
+        undo_btn=None,
+    ) as rag_chat_ui:
+        rag_chat_ui.clear_btn.click(ragsst.clear_ragchat_hist)
 
-    chat_ui = gr.ChatInterface(
+    with gr.ChatInterface(
         ragsst.chat,
         description="Simply chat with the LLM, without document context.",
         chatbot=gr.Chatbot(height=500),
@@ -407,7 +417,9 @@ def make_interface(ragsst: RAGTools) -> Any:
             gr.Slider(0.1, 1, value=0.5, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="LLM Settings", open=False),
-    )
+        undo_btn=None,
+    ) as chat_ui:
+        chat_ui.clear_btn.click(ragsst.clear_chat_hist)
 
     with gr.Blocks() as config_ui:
         with gr.Row():
