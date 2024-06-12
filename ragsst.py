@@ -184,6 +184,9 @@ class RAGTools:
             metadata = str(query_result.get('metadatas')[0][i])
             docs_selection.append('\n'.join([doc, f"Relevance: {sim}", metadata]))
 
+        if not docs_selection:
+            return "Relevant passage not found. Try lowering the relevance threshold."
+
         return "\n-----------------\n\n".join(docs_selection)
 
     def get_relevant_text(
@@ -232,7 +235,7 @@ class RAGTools:
             f"rag_query args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
         )
         relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
-        # logger.debug(f"\nRelevant Context:\n{relevant_text}")
+        logger.debug(f"\nRelevant Context:\n{relevant_text}")
         if not relevant_text:
             return "Relevant passage not found. Try lowering the relevance threshold."
         contextualized_query = self.get_context_prompt(user_msg, relevant_text)
@@ -252,7 +255,7 @@ class RAGTools:
         logger.debug(
             f"rag_chat args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
         )
-        MSG_NO_CONTEXT = "Relevant passage not found."
+        MSG_NO_CONTEXT = "Relevant passage not found. Try lowering the relevance threshold."
 
         if not self.rag_conversation:
             relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
@@ -276,7 +279,6 @@ class RAGTools:
         if not relevant_text:
             return MSG_NO_CONTEXT
         contextualized_standalone_query = self.get_context_prompt(standalone_query, relevant_text)
-        # logger.debug(f"Contextualized new query:\n{contextualized_standalone_query}")
 
         bot_response = self.llm_generate(
             contextualized_standalone_query, top_k=top_k, top_p=top_p, temp=temp
