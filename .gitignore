@@ -11,9 +11,11 @@ venv/
 # Env variables file
 .env
 
-# Data files
+# Data and export files
 data/*
 !data/.empty
+exports/*
+!exports/.empty
 
 # Local data folders:
 local/
