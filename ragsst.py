@@ -4,7 +4,6 @@ import chromadb
 from chromadb.utils import embedding_functions
 from tqdm import tqdm
 import requests, json
-from random import choice
 import gradio as gr
 from typing import List, Any
 from collections import deque
@@ -160,9 +159,6 @@ class RAGTools:
 
     # ============== Semantic Search / Retrieval ===============================
 
-    def retrieve_content_mockup(self, query, nresults=2, sim_th=0.25):
-        return f"Some Snippet from documents related to {query}\nRelevance:0.7\nSource: holmes.pdf | part: n"
-
     def retrieve_content_w_meta_info(
         self, query: str = '', nresults: int = 2, sim_th: float | None = None
     ) -> str:
@@ -294,12 +290,6 @@ class RAGTools:
         return bot_response
 
     # ============== Utils =====================================================
-
-    def llm_mockup(self, prompt, top_k=1, top_p=0.9, temp=0.5):
-        return choice(["Yes!", "Not sure", "It depends", "42"])
-
-    def chat_mockup(self, message, history):
-        return choice(["Yes!", "Not sure", "It depends", "42"])
 
     def check_initdb_conditions(self) -> bool:
 
