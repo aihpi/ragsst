@@ -6,7 +6,7 @@ from tqdm import tqdm
 import requests, json
 from random import choice
 import gradio as gr
-from typing import List, Callable, Any
+from typing import List, Any
 from collections import deque
 from utils import list_files, read_file, split_text
 from parameters import DATA_PATH, VECTOR_DB_PATH, EMBEDDING_MODEL, COLLECTION_NAME
@@ -46,7 +46,7 @@ class RAGTools:
                 name=self.collection_name, embedding_function=self.embedding_func
             )
 
-    # ============== LLM (Ollama) =================================================
+    # ============== LLM (Ollama) ==============================================
 
     def llm_generate(
         self, prompt: str, top_k: int = 5, top_p: float = 0.9, temp: float = 0.2
@@ -65,8 +65,7 @@ class RAGTools:
             return response_dic.get('response', '')
 
         except Exception as e:
-            logger.error(e)
-            raise
+            logger.error(f"Exception: {e}\nResponse:{response_dic}")
 
     def llm_chat(
         self, user_message: str, top_k: int = 5, top_p: float = 0.9, temp: float = 0.5
@@ -91,10 +90,22 @@ class RAGTools:
             return response.get('content', '')
 
         except Exception as e:
-            logger.error(e)
-            raise
+            logger.error(f"Exception: {e}\nResponse:{response_dic}")
 
-    # ============== Vector Store =================================================
+    def list_local_models(self) -> List:
+
+        url = self.llm_base_url + "/tags"
+
+        try:
+            r = requests.get(url)
+            response_dic = json.loads(r.text)
+            models_names = [model.get("name") for model in response_dic.get("models")]
+            return models_names
+
+        except Exception as e:
+            logger.error(f"Exception: {e}\nResponse:{response_dic}")
+
+    # ============== Vector Store ==============================================
 
     def make_collection(
         self,
@@ -104,9 +115,13 @@ class RAGTools:
     ) -> None:
         """Create vector store collection from a set of documents"""
 
-        logger.info(f"Documents Path: {data_path} | Collection Name: {collection_name}")
-        logger.info("Populating embeddings database...")
+        logger.info(
+            f"Documents Path: {data_path} | Collection Name: {collection_name} | Embedding Model: {self.embedding_model}"
+        )
 
+        self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name=self.embedding_model
+        )
         self.collection = self.vs_client.get_or_create_collection(
             name=collection_name,
             embedding_function=self.embedding_func,
@@ -114,7 +129,9 @@ class RAGTools:
         )
 
         files = list_files(data_path, extensions=('.txt', '.pdf'))
-        logger.info(f"Files found: {', '.join([f.replace(data_path, '') for f  in files])}")
+        logger.info(f"{len(files)} files found.")
+        logger.info(f"Files: {', '.join([f.replace(data_path, '') for f  in files])}")
+        logger.info("Populating embeddings database...")
 
         if skip_included_files:
             sources = {m.get('source') for m in self.collection.get().get('metadatas')}
@@ -139,7 +156,9 @@ class RAGTools:
                     metadatas={"source": file_name, "part": i},
                 )
 
-    # ============== Semantic Search / Retrieval ==================================
+        logger.debug(f"Stored Collections: {self.vs_client.list_collections()}")
+
+    # ============== Semantic Search / Retrieval ===============================
 
     def retrieve_content_mockup(self, query, nresults=2, sim_th=0.25):
         return f"Some Snippet from documents related to {query}\nRelevance:0.7\nSource: holmes.pdf | part: n"
@@ -150,6 +169,7 @@ class RAGTools:
         """Get list of relevant content from a collection including similarity and sources"""
 
         query_result = self.collection.query(query_texts=query, n_results=nresults)
+
         docs_selection = []
 
         for i in range(len(query_result.get('ids')[0])):
@@ -163,6 +183,9 @@ class RAGTools:
             doc = query_result.get('documents')[0][i]
             metadata = str(query_result.get('metadatas')[0][i])
             docs_selection.append('\n'.join([doc, f"Relevance: {sim}", metadata]))
+
+        if not docs_selection:
+            return "Relevant passage not found. Try lowering the relevance threshold."
 
         return "\n-----------------\n\n".join(docs_selection)
 
@@ -179,7 +202,7 @@ class RAGTools:
             return ''.join(relevant_docs)
         return ''.join(docs)
 
-    # ============== Retrieval Augemented Generation ==============================
+    # ============== Retrieval Augemented Generation ===========================
 
     def get_context_prompt(self, query: str, context: str) -> str:
         contextual_prompt = (
@@ -212,7 +235,7 @@ class RAGTools:
             f"rag_query args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
         )
         relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
-        # logger.debug(f"\nRelevant Context:\n{relevant_text}")
+        logger.debug(f"\nRelevant Context:\n{relevant_text}")
         if not relevant_text:
             return "Relevant passage not found. Try lowering the relevance threshold."
         contextualized_query = self.get_context_prompt(user_msg, relevant_text)
@@ -232,7 +255,7 @@ class RAGTools:
         logger.debug(
             f"rag_chat args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
         )
-        MSG_NO_CONTEXT = "Relevant passage not found."
+        MSG_NO_CONTEXT = "Relevant passage not found. Try lowering the relevance threshold."
 
         if not self.rag_conversation:
             relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
@@ -256,7 +279,6 @@ class RAGTools:
         if not relevant_text:
             return MSG_NO_CONTEXT
         contextualized_standalone_query = self.get_context_prompt(standalone_query, relevant_text)
-        # logger.debug(f"Contextualized new query:\n{contextualized_standalone_query}")
 
         bot_response = self.llm_generate(
             contextualized_standalone_query, top_k=top_k, top_p=top_p, temp=temp
@@ -265,13 +287,13 @@ class RAGTools:
         self.rag_conversation.append('Answer:\n' + bot_response)
         return bot_response
 
-    # ============== LLM chat w/o Document Context ================================
+    # ============== LLM chat w/o Document Context =============================
 
     def chat(self, user_msg, history, top_k, top_p, temp):
         bot_response = self.llm_chat(user_msg, top_k=top_k, top_p=top_p, temp=temp)
         return bot_response
 
-    # ============== Utils ========================================================
+    # ============== Utils =====================================================
 
     def llm_mockup(self, prompt, top_k=1, top_p=0.9, temp=0.5):
         return choice(["Yes!", "Not sure", "It depends", "42"])
@@ -290,17 +312,36 @@ class RAGTools:
             )
         )
 
+    def set_model(self, llm: str):
+        self.model = llm
+        logger.info(f"Chosen Model: {self.model}")
+
+    def set_embeddings_model(self, emb_model: str):
+        self.embedding_model = emb_model
+        self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
+            model_name=self.embedding_model
+        )
+        logger.debug(f"Embedding Model: {self.embedding_model}")
+
+    def set_data_path(self, data_path: str):
+        self.data_path = data_path
+        logger.debug(f"Data Path: {self.data_path}")
+
+    def set_collection_name(self, collection_name: str):
+        self.collection_name = collection_name
+        logger.debug(f"Collection Name: {self.collection_name}")
+
+    def clear_chat_hist(self) -> None:
+        self.conversation.clear()
+
+    def clear_ragchat_hist(self) -> None:
+        self.rag_conversation.clear()
+
 
 # ============== Interface ====================================================
 
 
-def make_interface(
-    rag_query: Callable,
-    semantic_retrieval: Callable,
-    rag_chat: Callable,
-    chat: Callable,
-    makedb: Callable,
-) -> Any:
+def make_interface(ragsst: RAGTools) -> Any:
 
     # Parameter information
     pinfo = {
@@ -312,11 +353,13 @@ def make_interface(
     }
 
     rag_query_ui = gr.Interface(
-        rag_query,
+        ragsst.rag_query,
         gr.Textbox(label="Query"),
         gr.Textbox(label="Answer", lines=14),
         description="Query an LLM about information from your documents.",
-        allow_flagging="never",
+        allow_flagging="manual",
+        flagging_dir="exports/rag_query",
+        flagging_options=[("Export", "export")],
         additional_inputs=[
             gr.Slider(
                 0, 1, value=0.3, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
@@ -329,23 +372,29 @@ def make_interface(
             gr.Slider(0.1, 1, value=0.3, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="Settings", open=False),
+        clear_btn=None,
     )
 
     semantic_retrieval_ui = gr.Interface(
-        semantic_retrieval,
+        ragsst.retrieve_content_w_meta_info,
         gr.Textbox(label="Query"),
         gr.Textbox(label="Related Content", lines=20),
         description="Find information in your documents.",
         allow_flagging="manual",
+        flagging_dir="exports/semantic_retrieval",
+        flagging_options=[("Export", "export")],
         additional_inputs=[
             gr.Slider(1, 5, value=2, step=1, label="Top n results", info=pinfo.get("TopnR")),
-            gr.Slider(0, 1, value=0.4, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")),
+            gr.Slider(
+                0, 1, value=0.4, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
+            ),
         ],
         additional_inputs_accordion=gr.Accordion(label="Retrieval Settings", open=False),
+        clear_btn=None,
     )
 
-    rag_chat_ui = gr.ChatInterface(
-        rag_chat,
+    with gr.ChatInterface(
+        ragsst.rag_chat,
         description="Query and interact with an LLM considering your documents information.",
         chatbot=gr.Chatbot(height=500),
         additional_inputs=[
@@ -360,10 +409,12 @@ def make_interface(
             gr.Slider(0.1, 1, value=0.3, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="Settings", open=False),
-    )
+        undo_btn=None,
+    ) as rag_chat_ui:
+        rag_chat_ui.clear_btn.click(ragsst.clear_ragchat_hist)
 
-    chat_ui = gr.ChatInterface(
-        chat,
+    with gr.ChatInterface(
+        ragsst.chat,
         description="Simply chat with the LLM, without document context.",
         chatbot=gr.Chatbot(height=500),
         additional_inputs=[
@@ -372,21 +423,57 @@ def make_interface(
             gr.Slider(0.1, 1, value=0.5, step=0.1, label="Temp", info=pinfo.get("Temp")),
         ],
         additional_inputs_accordion=gr.Accordion(label="LLM Settings", open=False),
-    )
+        undo_btn=None,
+    ) as chat_ui:
+        chat_ui.clear_btn.click(ragsst.clear_chat_hist)
 
-    with gr.Blocks() as embed_docs_ui:
-        gr.Markdown(
-            "Make and populate the Embeddings Database (Vector Store) with your documents."
-        )
-        data_path = gr.Textbox(value=DATA_PATH, label="Documents Path")
-        collection_name = gr.Textbox(value=COLLECTION_NAME, label="Collection Name")
-        makedb_btn = gr.Button("Make Db")
-        text_output = gr.Textbox(label="Info")
-        makedb_btn.click(fn=makedb, inputs=[data_path, collection_name], outputs=text_output)
+    with gr.Blocks() as config_ui:
+        with gr.Row():
+            with gr.Column(scale=3):
+
+                def make_db(data_path, collection_name, embedding_model):
+                    ragsst.set_data_path(data_path)
+                    ragsst.set_collection_name(collection_name)
+                    ragsst.set_embeddings_model(embedding_model)
+                    ragsst.make_collection(data_path, collection_name)
+
+                gr.Markdown(
+                    "Make and populate the Embeddings Database (Vector Store) with your documents."
+                )
+                with gr.Row():
+                    data_path = gr.Textbox(value=DATA_PATH, label="Documents Path")
+                    collection_name = gr.Textbox(value=COLLECTION_NAME, label="Collection Name")
+                emb_model = gr.Dropdown(
+                    choices=[EMBEDDING_MODEL, "all-MiniLM-L6-v2", "multi-qa-MiniLM-L6-cos-v1"],
+                    value=EMBEDDING_MODEL,
+                    label="Embedding Model",
+                    interactive=True,
+                )
+                makedb_btn = gr.Button("Make Db", size='sm')
+                text_output = gr.Textbox(label="Info")
+                makedb_btn.click(
+                    fn=make_db,
+                    inputs=[data_path, collection_name, emb_model],
+                    outputs=text_output,
+                )
+
+            with gr.Column(scale=2):
+                gr.Markdown("Choose the Language Model")
+                model_choices = ragsst.list_local_models()
+                print(model_choices)
+                model_name = gr.Dropdown(
+                    choices=model_choices,
+                    allow_custom_value=True,
+                    value=MODEL,
+                    label="LLM",
+                    interactive=True,
+                )
+                setllm_btn = gr.Button("Submit Choice", size='sm')
+                setllm_btn.click(fn=ragsst.set_model, inputs=model_name)
 
     gui = gr.TabbedInterface(
-        [rag_query_ui, semantic_retrieval_ui, rag_chat_ui, chat_ui, embed_docs_ui],
-        ["RAG Query", "Semantic Retrieval", "RAG Chat", "Chat", "Make Db"],
+        [rag_query_ui, semantic_retrieval_ui, rag_chat_ui, chat_ui, config_ui],
+        ["RAG Query", "Semantic Retrieval", "RAG Chat", "Chat", "Rag Tool Settings"],
         title="Local RAG Tool",
     )
 
@@ -397,11 +484,5 @@ if __name__ == "__main__":
 
     ragsst = RAGTools()
 
-    mpragst = make_interface(
-        ragsst.rag_query,
-        ragsst.retrieve_content_w_meta_info,
-        ragsst.rag_chat,
-        ragsst.chat,
-        ragsst.make_collection,
-    )
+    mpragst = make_interface(ragsst)
     mpragst.launch()
