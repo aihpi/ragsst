@@ -357,7 +357,9 @@ def make_interface(ragsst: RAGTools) -> Any:
         gr.Textbox(label="Query"),
         gr.Textbox(label="Answer", lines=14),
         description="Query an LLM about information from your documents.",
-        allow_flagging="never",
+        allow_flagging="manual",
+        flagging_dir="exports/rag_query",
+        flagging_options=[("Export", "export")],
         additional_inputs=[
             gr.Slider(
                 0, 1, value=0.3, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
@@ -379,6 +381,8 @@ def make_interface(ragsst: RAGTools) -> Any:
         gr.Textbox(label="Related Content", lines=20),
         description="Find information in your documents.",
         allow_flagging="manual",
+        flagging_dir="exports/semantic_retrieval",
+        flagging_options=[("Export", "export")],
         additional_inputs=[
             gr.Slider(1, 5, value=2, step=1, label="Top n results", info=pinfo.get("TopnR")),
             gr.Slider(
