@@ -302,7 +302,7 @@ class RAGTools:
 
     # ============== LLM chat w/o Document Context =============================
 
-    def chat(self, user_msg, history, top_k, top_p, temp):
+    def chat(self, user_msg: str, history: Any, top_k: int, top_p: float, temp: float) -> str:
         bot_response = self.llm_chat(user_msg, top_k=top_k, top_p=top_p, temp=temp)
         return bot_response
 
@@ -319,22 +319,22 @@ class RAGTools:
             )
         )
 
-    def set_model(self, llm: str):
+    def set_model(self, llm: str) -> None:
         self.model = llm
         logger.info(f"Chosen Model: {self.model}")
 
-    def set_embeddings_model(self, emb_model: str):
+    def set_embeddings_model(self, emb_model: str) -> None:
         self.embedding_model = emb_model
         self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=self.embedding_model
         )
         logger.debug(f"Embedding Model: {self.embedding_model}")
 
-    def set_data_path(self, data_path: str):
+    def set_data_path(self, data_path: str) -> None:
         self.data_path = data_path
         logger.debug(f"Data Path: {self.data_path}")
 
-    def set_collection_name(self, collection_name: str):
+    def set_collection_name(self, collection_name: str) -> None:
         self.collection_name = collection_name
         logger.debug(f"Collection Name: {self.collection_name}")
 
