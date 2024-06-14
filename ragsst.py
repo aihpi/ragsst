@@ -5,7 +5,7 @@ from chromadb.utils import embedding_functions
 from tqdm import tqdm
 import requests, json
 import gradio as gr
-from typing import List, Any
+from typing import List, Any, Generator
 from collections import deque
 from utils import list_files, read_file, split_text
 from parameters import DATA_PATH, VECTOR_DB_PATH, EMBEDDING_MODEL, COLLECTION_NAME
@@ -103,6 +103,23 @@ class RAGTools:
 
         except Exception as e:
             logger.error(f"Exception: {e}\nResponse:{response_dic}")
+
+    def pull_model(self, model_name) -> Generator[str, str, None]:
+
+        url = self.llm_base_url + "/pull"
+
+        data = {"name": model_name}
+
+        try:
+            r = requests.post(url, json=data, stream=True)
+            r.raise_for_status()
+            for content in r.iter_lines():
+                if content:
+                    content_dict = json.loads(content)
+                    yield f"Status: {content_dict.get('status')}"
+
+        except Exception as e:
+            logger.error(f"Exception: {e}\nResponse:{r}")
 
     # ============== Vector Store ==============================================
 
@@ -450,16 +467,37 @@ def make_interface(ragsst: RAGTools) -> Any:
             with gr.Column(scale=2):
                 gr.Markdown("Choose the Language Model")
                 model_choices = ragsst.list_local_models()
-                print(model_choices)
                 model_name = gr.Dropdown(
+                    info="Choose which locally available LLM to use",
                     choices=model_choices,
+                    allow_custom_value=True,
+                    value=MODEL,
+                    label="Local LLM",
+                    interactive=True,
+                )
+                setllm_btn = gr.Button("Submit Choice", size='sm')
+                setllm_btn.click(fn=ragsst.set_model, inputs=model_name)
+
+                pull_model_name = gr.Dropdown(
+                    info="Download a LLM (Internet connection is needed for this feature)",
+                    choices=[
+                        MODEL,
+                        "phi3",
+                        "mistral",
+                        "gemma",
+                        "qwen",
+                        "dolphin-llama3",
+                        "tinydolphin",
+                        "deepseek-coder",
+                    ],
                     allow_custom_value=True,
                     value=MODEL,
                     label="LLM",
                     interactive=True,
                 )
-                setllm_btn = gr.Button("Submit Choice", size='sm')
-                setllm_btn.click(fn=ragsst.set_model, inputs=model_name)
+                setllm_btn = gr.Button("Download", size='sm')
+                pull_info = gr.Textbox(label="Info")
+                setllm_btn.click(fn=ragsst.pull_model, inputs=pull_model_name, outputs=pull_info)
 
     gui = gr.TabbedInterface(
         [rag_query_ui, semantic_retrieval_ui, rag_chat_ui, chat_ui, config_ui],
