@@ -1,3 +1,5 @@
+from os import getenv
+
 # Configuration parameters by area
 
 # Load text/documents
@@ -11,7 +13,7 @@ VECTOR_DB_PATH = "chroma_data"
 COLLECTION_NAME = "sample_docs"
 
 # LLM (ollama)
-LLMBASEURL = "http://localhost:11434/api"
+LLMBASEURL = getenv("OLLAMA_HOST", "http://localhost:11434/api")
 MODEL = "llama3"
 
 # Frontend
