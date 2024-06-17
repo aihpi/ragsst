@@ -475,11 +475,12 @@ def make_interface(ragsst: RAGTools) -> Any:
                     label="Local LLM",
                     interactive=True,
                 )
+
                 setllm_btn = gr.Button("Submit Choice", size='sm')
                 setllm_btn.click(fn=ragsst.set_model, inputs=model_name)
 
                 pull_model_name = gr.Dropdown(
-                    info="Download a LLM (Internet connection is needed for this feature)",
+                    info="Download a LLM (Internet connection is required)",
                     choices=[
                         MODEL,
                         "phi3",
@@ -498,6 +499,15 @@ def make_interface(ragsst: RAGTools) -> Any:
                 setllm_btn = gr.Button("Download", size='sm')
                 pull_info = gr.Textbox(label="Info")
                 setllm_btn.click(fn=ragsst.pull_model, inputs=pull_model_name, outputs=pull_info)
+
+                def update_local_models_list(progress_info):
+                    if "success" in progress_info.lower():
+                        return gr.Dropdown(
+                            choices=ragsst.list_local_models(), value=MODEL, interactive=True
+                        )
+                    return model_name
+
+                pull_info.change(update_local_models_list, pull_info, model_name)
 
     gui = gr.TabbedInterface(
         [rag_query_ui, semantic_retrieval_ui, rag_chat_ui, chat_ui, config_ui],
