@@ -14,6 +14,7 @@ venv/
 # Data and export files
 data/*
 !data/.empty
+!data/sample_docs
 exports/*
 !exports/.empty
 

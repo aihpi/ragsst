@@ -146,7 +146,7 @@ class RAGTools:
 
         files = list_files(data_path, extensions=('.txt', '.pdf'))
         logger.info(f"{len(files)} files found.")
-        logger.info(f"Files: {', '.join([f.replace(data_path, '') for f  in files])}")
+        logger.info(f"Files: {', '.join([f.replace(data_path, '', 1) for f  in files])}")
         logger.info("Populating embeddings database...")
 
         if skip_included_files:
