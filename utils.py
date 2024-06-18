@@ -1,5 +1,6 @@
 import os
 from pypdf import PdfReader
+import hashlib
 
 
 def list_files(path, walksubdirs=True, extensions=''):
@@ -80,6 +81,17 @@ def split_text(text, max_words=256, max_title_words=4):
         chunks.append(''.join(chunk))
 
     return chunks
+
+
+def hash_file(filename, block_size=128 * 64):
+
+    h = hashlib.sha1()
+
+    with open(filename, 'rb') as f:
+        while data := f.read(block_size):
+            h.update(data)
+
+    return h.hexdigest()
 
 
 if __name__ == '__main__':

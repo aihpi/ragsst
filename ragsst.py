@@ -7,7 +7,7 @@ import requests, json
 import gradio as gr
 from typing import List, Any, Generator
 from collections import deque
-from utils import list_files, read_file, split_text
+from utils import list_files, read_file, split_text, hash_file
 from parameters import DATA_PATH, VECTOR_DB_PATH, EMBEDDING_MODEL, COLLECTION_NAME
 from parameters import LLMBASEURL, MODEL
 
@@ -128,6 +128,7 @@ class RAGTools:
         data_path: str,
         collection_name: str,
         skip_included_files: bool = True,
+        consider_content=True,
     ) -> None:
         """Create vector store collection from a set of documents"""
 
@@ -151,13 +152,25 @@ class RAGTools:
 
         if skip_included_files:
             sources = {m.get('source') for m in self.collection.get().get('metadatas')}
+            if consider_content:
+                files_hashes = {m.get('file_hash') for m in self.collection.get().get('metadatas')}
 
         for f in files:
             _, file_name = os.path.split(f)
+            if consider_content:
+                file_hash = hash_file(f)
 
             if skip_included_files and file_name in sources:
-                logger.info(f"{file_name} Already in Vector-DB, skipping...")
-                continue
+                if not consider_content:
+                    logger.info(f"{file_name} name already in Vector-DB, skipping...")
+                    continue
+
+                if file_hash in files_hashes:
+                    logger.info(f"{file_name} content already in Vector-DB, skipping...")
+                    continue
+
+                logger.info(f"Updating DB for {file_name} ...")
+                self.collection.delete(where={"source": file_name})
 
             logger.info(f"Reading and splitting {file_name} ...")
             text = read_file(f)
@@ -166,10 +179,14 @@ class RAGTools:
             logger.info(f"Embedding and storing {file_name} ...")
 
             for i, c in tqdm(enumerate(chunks, 1), total=len(chunks)):
+                metadata = {"source": file_name, "part": i}
+                if consider_content:
+                    metadata["file_hash"] = file_hash
+
                 self.collection.add(
                     documents=c,
                     ids=f"id{file_name[:-4]}.{i}",
-                    metadatas={"source": file_name, "part": i},
+                    metadatas=metadata,
                 )
 
         logger.debug(f"Stored Collections: {self.vs_client.list_collections()}")
@@ -194,8 +211,16 @@ class RAGTools:
                     continue
 
             doc = query_result.get('documents')[0][i]
-            metadata = str(query_result.get('metadatas')[0][i])
-            docs_selection.append('\n'.join([doc, f"Relevance: {sim}", metadata]))
+            metadata = query_result.get('metadatas')[0][i]
+            docs_selection.append(
+                '\n'.join(
+                    [
+                        doc,
+                        f"Relevance: {sim}",
+                        f"Source: {metadata.get('source')} (part {metadata.get('part')})",
+                    ]
+                )
+            )
 
         if not docs_selection:
             return "Relevant passage not found. Try lowering the relevance threshold."
