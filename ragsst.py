@@ -490,7 +490,7 @@ def make_interface(ragsst: RAGTools) -> Any:
                     label="Embedding Model",
                     interactive=True,
                 )
-                makedb_btn = gr.Button("Make Db", size='sm')
+                makedb_btn = gr.Button("Make/Update Db", size='sm')
                 info_output = gr.Textbox(read_logs, label="Info", lines=10, every=2)
                 makedb_btn.click(
                     fn=make_db,
@@ -510,7 +510,7 @@ def make_interface(ragsst: RAGTools) -> Any:
                     interactive=True,
                 )
 
-                setllm_btn = gr.Button("Submit Choice", size='sm')
+                setllm_btn = gr.Button("Set Choice", size='sm')
                 setllm_btn.click(fn=ragsst.set_model, inputs=model_name)
 
                 pull_model_name = gr.Dropdown(
@@ -557,4 +557,4 @@ if __name__ == "__main__":
     ragsst = RAGTools()
 
     mpragst = make_interface(ragsst)
-    mpragst.launch()
+    mpragst.launch(show_api=False)
