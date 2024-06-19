@@ -18,6 +18,10 @@ data/*
 exports/*
 !exports/.empty
 
+# Logs
+log/*
+!log/.empty
+
 # Local data folders:
 local/
 resources/

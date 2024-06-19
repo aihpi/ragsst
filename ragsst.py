@@ -14,6 +14,8 @@ from parameters import LLMBASEURL, MODEL
 logging.basicConfig(format=os.getenv('LOG_FORMAT', '%(asctime)s [%(levelname)s] %(message)s'))
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv('LOG_LEVEL', logging.INFO))
+fh = logging.FileHandler('log/info.log', mode='w+')
+logger.addHandler(fh)
 
 
 class RAGTools:
@@ -147,7 +149,7 @@ class RAGTools:
 
         files = list_files(data_path, extensions=('.txt', '.pdf'))
         logger.info(f"{len(files)} files found.")
-        logger.info(f"Files: {', '.join([f.replace(data_path, '', 1) for f  in files])}")
+        logger.debug(f"Files: {', '.join([f.replace(data_path, '', 1) for f  in files])}")
         logger.info("Populating embeddings database...")
 
         if skip_included_files:
@@ -189,7 +191,9 @@ class RAGTools:
                     metadatas=metadata,
                 )
 
-        logger.debug(f"Stored Collections: {self.vs_client.list_collections()}")
+        logger.info(
+            f"Stored Collections: {', '.join([c.name for c in self.vs_client.list_collections()])}"
+        )
 
     # ============== Semantic Search / Retrieval ===============================
 
@@ -460,6 +464,11 @@ def make_interface(ragsst: RAGTools) -> Any:
         chat_ui.clear_btn.click(ragsst.clear_chat_hist)
 
     with gr.Blocks() as config_ui:
+
+        def read_logs():
+            with open(fh.baseFilename, "r") as f:
+                return f.read()
+
         with gr.Row():
             with gr.Column(scale=3):
 
@@ -482,11 +491,11 @@ def make_interface(ragsst: RAGTools) -> Any:
                     interactive=True,
                 )
                 makedb_btn = gr.Button("Make Db", size='sm')
-                text_output = gr.Textbox(label="Info")
+                info_output = gr.Textbox(read_logs, label="Info", lines=10, every=2)
                 makedb_btn.click(
                     fn=make_db,
                     inputs=[data_path, collection_name, emb_model],
-                    outputs=text_output,
+                    outputs=info_output,
                 )
 
             with gr.Column(scale=2):
