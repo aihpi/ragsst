@@ -8,14 +8,18 @@ import gradio as gr
 from typing import List, Any, Generator
 from collections import deque
 from utils import list_files, read_file, split_text, hash_file
-from parameters import DATA_PATH, VECTOR_DB_PATH, EMBEDDING_MODEL, COLLECTION_NAME
-from parameters import LLMBASEURL, MODEL
+from parameters import DATA_PATH, VECTOR_DB_PATH, COLLECTION_NAME, EMBEDDING_MODELS
+from parameters import LLMBASEURL, LLM_CHOICES
 
 logging.basicConfig(format=os.getenv('LOG_FORMAT', '%(asctime)s [%(levelname)s] %(message)s'))
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv('LOG_LEVEL', logging.INFO))
 fh = logging.FileHandler('log/info.log', mode='w+')
 logger.addHandler(fh)
+
+# Assign default values
+MODEL = LLM_CHOICES[0]
+EMBEDDING_MODEL = EMBEDDING_MODELS[0]
 
 
 class RAGTools:
@@ -153,9 +157,15 @@ class RAGTools:
         logger.info("Populating embeddings database...")
 
         if skip_included_files:
-            sources = {m.get('source') for m in self.collection.get().get('metadatas')}
+            sources = {
+                m.get('source')
+                for m in self.collection.get(include=['metadatas']).get('metadatas')
+            }
             if consider_content:
-                files_hashes = {m.get('file_hash') for m in self.collection.get().get('metadatas')}
+                files_hashes = {
+                    m.get('file_hash')
+                    for m in self.collection.get(include=['metadatas']).get('metadatas')
+                }
 
         for f in files:
             _, file_name = os.path.split(f)
@@ -485,7 +495,7 @@ def make_interface(ragsst: RAGTools) -> Any:
                     data_path = gr.Textbox(value=DATA_PATH, label="Documents Path")
                     collection_name = gr.Textbox(value=COLLECTION_NAME, label="Collection Name")
                 emb_model = gr.Dropdown(
-                    choices=[EMBEDDING_MODEL, "all-MiniLM-L6-v2", "multi-qa-MiniLM-L6-cos-v1"],
+                    choices=EMBEDDING_MODELS,
                     value=EMBEDDING_MODEL,
                     label="Embedding Model",
                     interactive=True,
@@ -515,16 +525,7 @@ def make_interface(ragsst: RAGTools) -> Any:
 
                 pull_model_name = gr.Dropdown(
                     info="Download a LLM (Internet connection is required)",
-                    choices=[
-                        MODEL,
-                        "phi3",
-                        "mistral",
-                        "gemma",
-                        "qwen",
-                        "dolphin-llama3",
-                        "tinydolphin",
-                        "deepseek-coder",
-                    ],
+                    choices=LLM_CHOICES,
                     allow_custom_value=True,
                     value=MODEL,
                     label="LLM",
