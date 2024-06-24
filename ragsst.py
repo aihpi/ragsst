@@ -5,7 +5,7 @@ from chromadb.utils import embedding_functions
 from tqdm import tqdm
 import requests, json
 import gradio as gr
-from typing import List, Any, Generator
+from typing import List, Any, Generator, Deque
 from collections import deque
 from utils import list_files, read_file, split_text, hash_file
 from parameters import DATA_PATH, VECTOR_DB_PATH, COLLECTION_NAME, EMBEDDING_MODELS
@@ -38,18 +38,13 @@ class RAGTools:
         self.rag_conversation = deque(maxlen=self.max_conversation_length)
         self.data_path = data_path
         self.embedding_model = embedding_model
-        self.vs_client = chromadb.PersistentClient(path=VECTOR_DB_PATH)
+        self.vs_client = chromadb.PersistentClient(
+            path=VECTOR_DB_PATH, settings=chromadb.Settings(allow_reset=True)
+        )
         self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=self.embedding_model
         )
-        self.collection_name = collection_name
-        if self.check_initdb_conditions():
-            logger.debug("Init DB contitions are met")
-            self.make_collection(data_path=self.data_path, collection_name=self.collection_name)
-        else:
-            self.collection = self.vs_client.get_collection(
-                name=self.collection_name, embedding_function=self.embedding_func
-            )
+        self._setup_vec_store(collection_name)
 
     # ============== LLM (Ollama) ==============================================
 
@@ -134,7 +129,7 @@ class RAGTools:
         data_path: str,
         collection_name: str,
         skip_included_files: bool = True,
-        consider_content=True,
+        consider_content: bool = True,
     ) -> None:
         """Create vector store collection from a set of documents"""
 
@@ -268,7 +263,7 @@ class RAGTools:
 
         return contextual_prompt
 
-    def get_condenser_prompt(self, query: str, chat_history: List) -> str:
+    def get_condenser_prompt(self, query: str, chat_history: Deque) -> str:
         history = '\n'.join(list(chat_history))
         condenser_prompt = (
             "Given the following chat history and a follow up query, rephrase the follow up query to be a standalone query. "
@@ -346,8 +341,9 @@ class RAGTools:
         return bot_response
 
     # ============== Utils =====================================================
+    # Methods for internal usage and/or interaction with the GUI
 
-    def check_initdb_conditions(self) -> bool:
+    def _check_initdb_conditions(self) -> bool:
 
         return (
             os.path.exists(self.data_path)
@@ -357,6 +353,22 @@ class RAGTools:
                 or not [f.path for f in os.scandir(VECTOR_DB_PATH) if f.is_dir()]
             )
         )
+
+    def _setup_vec_store(self, collection_name) -> None:
+
+        if self._check_initdb_conditions():
+            logger.debug("Init DB contitions are met")
+            self.collection_name = collection_name
+            self.make_collection(self.data_path, self.collection_name)
+        else:
+            collection_names = self.list_collections_names()
+            if collection_names:
+                self.set_collection(collection_names[0])
+                if not self.collection.peek(limit=1).get("ids"):
+                    logger.info("The Set Collection is empty. Populate it or choose another one")
+            else:
+                self.set_collection(collection_name)
+                logger.warning("The Database is empty. Make/Update Database")
 
     def set_model(self, llm: str) -> None:
         self.model = llm
@@ -376,6 +388,33 @@ class RAGTools:
     def set_collection_name(self, collection_name: str) -> None:
         self.collection_name = collection_name
         logger.debug(f"Collection Name: {self.collection_name}")
+
+    def list_collections_names(self) -> List:
+        return [c.name for c in self.vs_client.list_collections()]
+
+    def set_collection(self, collection_name: str) -> None:
+        self.set_collection_name(collection_name)
+        self.collection = self.vs_client.get_or_create_collection(
+            name=self.collection_name,
+            embedding_function=self.embedding_func,
+            metadata={"hnsw:space": "cosine"},
+        )
+        logger.info(f"Collection Choice: {self.collection_name}")
+
+    def delete_collection(self, collection_name: str) -> None:
+        """Removes chosen collection and sets the first one on the list"""
+        self.vs_client.delete_collection(collection_name)
+        logger.info(f"{collection_name} removed")
+        collections_list = self.list_collections_names()
+        logger.info(f"Stored Collections: {', '.join(collections_list)}")
+        if collections_list:
+            self.set_collection(collections_list[0])
+
+    def clean_database(self) -> None:
+        """Deletes all collections and entries"""
+        self.vs_client.reset()
+        self.vs_client.clear_system_cache()
+        logger.info("Database empty")
 
     def clear_chat_hist(self) -> None:
         self.conversation.clear()
@@ -483,30 +522,71 @@ def make_interface(ragsst: RAGTools) -> Any:
             with gr.Column(scale=3):
 
                 def make_db(data_path, collection_name, embedding_model):
+                    if collection_name is None:
+                        collection_name = COLLECTION_NAME
                     ragsst.set_data_path(data_path)
                     ragsst.set_collection_name(collection_name)
                     ragsst.set_embeddings_model(embedding_model)
                     ragsst.make_collection(data_path, collection_name)
 
-                gr.Markdown(
-                    "Make and populate the Embeddings Database (Vector Store) with your documents."
-                )
+                gr.Markdown("Make and populate the Embeddings Database.")
                 with gr.Row():
-                    data_path = gr.Textbox(value=DATA_PATH, label="Documents Path")
-                    collection_name = gr.Textbox(value=COLLECTION_NAME, label="Collection Name")
+                    with gr.Column():
+                        data_path = gr.Textbox(
+                            value=ragsst.data_path,
+                            label="Documents Path",
+                            info="Folder containing your documents",
+                        )
+                    with gr.Column():
+                        collection_choices = ragsst.list_collections_names()
+                        collection_name = gr.Dropdown(
+                            info="Choose or set a collection name to use or create",
+                            choices=collection_choices,
+                            allow_custom_value=True,
+                            value=ragsst.collection_name,
+                            label="Collection Name",
+                            interactive=True,
+                        )
+                        with gr.Row():
+                            setcollection_btn = gr.Button("Set Choice", size='sm')
+                            deletecollection_btn = gr.Button("Delete", size='sm')
+                        setcollection_btn.click(ragsst.set_collection, inputs=collection_name)
+                        deletecollection_btn.click(
+                            ragsst.delete_collection, inputs=collection_name
+                        )
+
+                        def update_collections_list(current_value):
+                            local_collections = ragsst.list_collections_names()
+                            if local_collections:
+                                if current_value in local_collections:
+                                    default_value = current_value
+                                else:
+                                    default_value = local_collections[0]
+                            else:
+                                default_value = None
+                            return gr.Dropdown(
+                                choices=local_collections,
+                                value=default_value,
+                                interactive=True,
+                            )
+
                 emb_model = gr.Dropdown(
                     choices=EMBEDDING_MODELS,
                     value=EMBEDDING_MODEL,
                     label="Embedding Model",
                     interactive=True,
                 )
-                makedb_btn = gr.Button("Make/Update Db", size='sm')
+                with gr.Row():
+                    makedb_btn = gr.Button("Make/Update Database", size='lg', scale=2)
+                    deletedb_btn = gr.Button("Clean Database", size='lg', scale=1)
                 info_output = gr.Textbox(read_logs, label="Info", lines=10, every=2)
                 makedb_btn.click(
                     fn=make_db,
                     inputs=[data_path, collection_name, emb_model],
                     outputs=info_output,
                 )
+                deletedb_btn.click(fn=ragsst.clean_database)
+                info_output.change(update_collections_list, collection_name, collection_name)
 
             with gr.Column(scale=2):
                 gr.Markdown("Choose the Language Model")
