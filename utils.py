@@ -1,9 +1,10 @@
+from typing import List, Tuple
 import os
 from pypdf import PdfReader
 import hashlib
 
 
-def list_files(path, walksubdirs=True, extensions=''):
+def list_files(path: str, walksubdirs: bool = True, extensions: str | Tuple[str] = "") -> List[str]:
     """Returns a List of strings with the file names on the given path"""
 
     if walksubdirs:
@@ -23,7 +24,7 @@ def list_files(path, walksubdirs=True, extensions=''):
     return sorted(files_list)
 
 
-def read_file(doc):
+def read_file(doc: str) -> str:
     """Get text from pdf and txt files"""
     text = ''
     if doc.endswith('.txt'):
@@ -35,7 +36,7 @@ def read_file(doc):
     return text
 
 
-def split_text_basic(text, max_words=256):
+def split_text_basic(text: str, max_words: int = 256) -> List[str]:
     """Split text in chunks with less than max_words"""
 
     # List of lines skipping empty lines
@@ -56,7 +57,7 @@ def split_text_basic(text, max_words=256):
     return chunks
 
 
-def split_text(text, max_words=256, max_title_words=4):
+def split_text(text: str, max_words: int = 256, max_title_words: int = 4) -> List[str]:
     """Split text in trivial context-awared chunks with less than max_words"""
 
     # List of lines skipping empty lines
@@ -83,7 +84,7 @@ def split_text(text, max_words=256, max_title_words=4):
     return chunks
 
 
-def hash_file(filename, block_size=128 * 64):
+def hash_file(filename: str, block_size: int = 128 * 64) -> str:
 
     h = hashlib.sha1()
 
