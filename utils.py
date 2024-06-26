@@ -4,7 +4,9 @@ from pypdf import PdfReader
 import hashlib
 
 
-def list_files(path: str, walksubdirs: bool = True, extensions: str | Tuple[str] = "") -> List[str]:
+def list_files(
+    path: str, walksubdirs: bool = True, extensions: str | Tuple[str] = ""
+) -> List[str]:
     """Returns a List of strings with the file names on the given path"""
 
     if walksubdirs:
@@ -93,20 +95,3 @@ def hash_file(filename: str, block_size: int = 128 * 64) -> str:
             h.update(data)
 
     return h.hexdigest()
-
-
-if __name__ == '__main__':
-    # check chunk splitting
-    docs_path = 'sample_data'
-    files = list_files(docs_path, extensions=('.txt', '.pdf'))
-    print("Found files:")
-    print("\n".join(files))
-    chosen_file = files[1]
-    print(f"\nReading and splitting {chosen_file}...")
-    text = read_file(chosen_file)
-    chunks = split_text(text)
-    print("\nChunks:")
-    for c in chunks:
-        print(c)
-        print("Words Length:", len(c.split()))
-        print(80 * '-')
