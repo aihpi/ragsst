@@ -62,8 +62,10 @@ def split_text_basic(text: str, max_words: int = 256) -> List[str]:
 def split_text(text: str, max_words: int = 256, max_title_words: int = 4) -> List[str]:
     """Split text in trivial context-awared chunks with less than max_words"""
 
+    punctuations = ('.', '?', '!', '”', '"')
+
     # List of lines skipping empty lines
-    lines = [l for l in text.splitlines(True) if l.strip()]
+    lines = [l for l in text.splitlines() if l.strip()]
 
     chunks = []
     chunk = []
@@ -71,17 +73,19 @@ def split_text(text: str, max_words: int = 256, max_title_words: int = 4) -> Lis
     for l in lines:
         line_length = len(l.split())
         if chunk_length + line_length <= max_words and (
-            line_length > max_title_words or all(len(s.split()) <= max_title_words for s in chunk)
+            line_length > max_title_words
+            or l.strip().endswith(punctuations)
+            or all(len(s.split()) <= max_title_words for s in chunk)
         ):
             chunk.append(l)
             chunk_length += line_length
             continue
-        chunks.append(''.join(chunk))  # if splitlines(False) do "\n".join()
+        chunks.append('\n'.join(chunk))
         chunk = [l]
         chunk_length = len(l.split())
 
     if chunk:
-        chunks.append(''.join(chunk))
+        chunks.append('\n'.join(chunk))
 
     return chunks
 
