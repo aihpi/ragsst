@@ -536,6 +536,7 @@ def make_interface(ragsst: RAGTools) -> Any:
                             value=ragsst.data_path,
                             label="Documents Path",
                             info="Folder containing your documents",
+                            interactive=True,
                         )
                     with gr.Column():
                         collection_choices = ragsst.list_collections_names()
