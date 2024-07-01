@@ -38,13 +38,13 @@ class RAGTools:
         self.rag_conversation = deque(maxlen=self.max_conversation_length)
         self.data_path = data_path
         self.embedding_model = embedding_model
+        self.collection_name = collection_name
         self.vs_client = chromadb.PersistentClient(
             path=VECTOR_DB_PATH, settings=chromadb.Settings(allow_reset=True)
         )
         self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=self.embedding_model
         )
-        self._setup_vec_store(collection_name)
 
     # ============== LLM (Ollama) ==============================================
 
@@ -124,6 +124,19 @@ class RAGTools:
 
     # ============== Vector Store ==============================================
 
+    def set_collection(self, collection_name: str, embedding_model: str = None) -> None:
+        self.set_collection_name(collection_name)
+        if embedding_model is not None:
+            self.set_embeddings_model(embedding_model)
+        self.collection = self.vs_client.get_or_create_collection(
+            name=self.collection_name,
+            embedding_function=self.embedding_func,
+            metadata={"hnsw:space": "cosine", "embedding_model": self.embedding_model},
+        )
+        logger.info(
+            f"Set Collection: {self.collection_name}. Embedding Model: {self.embedding_model}"
+        )
+
     def make_collection(
         self,
         data_path: str,
@@ -133,18 +146,9 @@ class RAGTools:
     ) -> None:
         """Create vector store collection from a set of documents"""
 
-        logger.info(
-            f"Documents Path: {data_path} | Collection Name: {collection_name} | Embedding Model: {self.embedding_model}"
-        )
+        logger.info(f"Documents Path: {data_path}")
 
-        self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name=self.embedding_model
-        )
-        self.collection = self.vs_client.get_or_create_collection(
-            name=collection_name,
-            embedding_function=self.embedding_func,
-            metadata={"hnsw:space": "cosine"},
-        )
+        self.set_collection(collection_name, None)
 
         files = list_files(data_path, extensions=('.txt', '.pdf'))
         logger.info(f"{len(files)} files found.")
@@ -196,9 +200,7 @@ class RAGTools:
                     metadatas=metadata,
                 )
 
-        logger.info(
-            f"Stored Collections: {', '.join([c.name for c in self.vs_client.list_collections()])}"
-        )
+        logger.info(f"Available collections: {self.list_collections_names_w_metainfo()}")
 
     # ============== Semantic Search / Retrieval ===============================
 
@@ -354,16 +356,19 @@ class RAGTools:
             )
         )
 
-    def _setup_vec_store(self, collection_name) -> None:
+    def setup_vec_store(self, collection_name: str = COLLECTION_NAME) -> None:
+        "Vector Store Initialization Setup"
 
         if self._check_initdb_conditions():
             logger.debug("Init DB contitions are met")
-            self.collection_name = collection_name
-            self.make_collection(self.data_path, self.collection_name)
+            self.make_collection(self.data_path, collection_name)
         else:
-            collection_names = self.list_collections_names()
-            if collection_names:
-                self.set_collection(collection_names[0])
+            collections = self.vs_client.list_collections()
+            if collections:
+                logger.info(f"Available collections: {self.list_collections_names_w_metainfo()}")
+                self.set_collection(
+                    collections[0].name, collections[0].metadata.get("embedding_model")
+                )
                 if not self.collection.peek(limit=1).get("ids"):
                     logger.info("The Set Collection is empty. Populate it or choose another one")
             else:
@@ -392,23 +397,24 @@ class RAGTools:
     def list_collections_names(self) -> List:
         return [c.name for c in self.vs_client.list_collections()]
 
-    def set_collection(self, collection_name: str) -> None:
-        self.set_collection_name(collection_name)
-        self.collection = self.vs_client.get_or_create_collection(
-            name=self.collection_name,
-            embedding_function=self.embedding_func,
-            metadata={"hnsw:space": "cosine"},
+    def list_collections_names_w_metainfo(self) -> str:
+        return ', '.join(
+            [
+                f"{c.name} ({c.metadata.get('embedding_model','')})"
+                for c in self.vs_client.list_collections()
+            ]
         )
-        logger.info(f"Collection Choice: {self.collection_name}")
 
     def delete_collection(self, collection_name: str) -> None:
         """Removes chosen collection and sets the first one on the list"""
         self.vs_client.delete_collection(collection_name)
         logger.info(f"{collection_name} removed")
-        collections_list = self.list_collections_names()
-        logger.info(f"Stored Collections: {', '.join(collections_list)}")
-        if collections_list:
-            self.set_collection(collections_list[0])
+        collections = self.vs_client.list_collections()
+        if collections:
+            logger.info(f"Setting first available collection: {collections[0].name}")
+            self.set_collection(
+                collections[0].name, collections[0].metadata.get("embedding_model")
+            )
 
     def clean_database(self) -> None:
         """Deletes all collections and entries"""
@@ -525,7 +531,6 @@ def make_interface(ragsst: RAGTools) -> Any:
                     if collection_name is None:
                         collection_name = COLLECTION_NAME
                     ragsst.set_data_path(data_path)
-                    ragsst.set_collection_name(collection_name)
                     ragsst.set_embeddings_model(embedding_model)
                     ragsst.make_collection(data_path, collection_name)
 
@@ -541,7 +546,7 @@ def make_interface(ragsst: RAGTools) -> Any:
                     with gr.Column():
                         collection_choices = ragsst.list_collections_names()
                         collection_name = gr.Dropdown(
-                            info="Choose or set a collection name to use or create",
+                            info="Choose a collection to use/delete or write a name (no spaces allowed) to create a new one",
                             choices=collection_choices,
                             allow_custom_value=True,
                             value=ragsst.collection_name,
@@ -551,10 +556,6 @@ def make_interface(ragsst: RAGTools) -> Any:
                         with gr.Row():
                             setcollection_btn = gr.Button("Set Choice", size='sm')
                             deletecollection_btn = gr.Button("Delete", size='sm')
-                        setcollection_btn.click(ragsst.set_collection, inputs=collection_name)
-                        deletecollection_btn.click(
-                            ragsst.delete_collection, inputs=collection_name
-                        )
 
                         def update_collections_list(current_value):
                             local_collections = ragsst.list_collections_names()
@@ -577,6 +578,10 @@ def make_interface(ragsst: RAGTools) -> Any:
                     label="Embedding Model",
                     interactive=True,
                 )
+
+                setcollection_btn.click(ragsst.set_collection, inputs=[collection_name, emb_model])
+                deletecollection_btn.click(ragsst.delete_collection, inputs=collection_name)
+
                 with gr.Row():
                     makedb_btn = gr.Button("Make/Update Database", size='lg', scale=2)
                     deletedb_btn = gr.Button("Clean Database", size='lg', scale=1)
@@ -593,7 +598,7 @@ def make_interface(ragsst: RAGTools) -> Any:
                 gr.Markdown("Choose the Language Model")
                 model_choices = ragsst.list_local_models()
                 model_name = gr.Dropdown(
-                    info="Choose which locally available LLM to use",
+                    info="Choose a locally available LLM to use",
                     choices=model_choices,
                     allow_custom_value=True,
                     value=MODEL,
@@ -637,6 +642,7 @@ def make_interface(ragsst: RAGTools) -> Any:
 if __name__ == "__main__":
 
     ragsst = RAGTools()
+    ragsst.setup_vec_store()
 
     mpragst = make_interface(ragsst)
     mpragst.launch(show_api=False)
