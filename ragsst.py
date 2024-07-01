@@ -1,15 +1,14 @@
-import logging
 import os
+import logging
 import chromadb
 from chromadb.utils import embedding_functions
-from tqdm import tqdm
 import requests, json
 import gradio as gr
+from tqdm import tqdm
 from typing import List, Any, Generator, Deque
 from collections import deque
 from utils import list_files, read_file, split_text, hash_file
-from parameters import DATA_PATH, VECTOR_DB_PATH, COLLECTION_NAME, EMBEDDING_MODELS
-from parameters import LLMBASEURL, LLM_CHOICES
+import parameters as p
 
 logging.basicConfig(format=os.getenv('LOG_FORMAT', '%(asctime)s [%(levelname)s] %(message)s'))
 logger = logging.getLogger(__name__)
@@ -18,29 +17,29 @@ fh = logging.FileHandler('log/info.log', mode='w+')
 logger.addHandler(fh)
 
 # Assign default values
-MODEL = LLM_CHOICES[0]
-EMBEDDING_MODEL = EMBEDDING_MODELS[0]
+MODEL = p.LLM_CHOICES[0]
+EMBEDDING_MODEL = p.EMBEDDING_MODELS[0]
 
 
 class RAGTools:
     def __init__(
         self,
         model: str = MODEL,
-        llm_base_url: str = LLMBASEURL,
-        data_path: str = DATA_PATH,
+        llm_base_url: str = p.LLMBASEURL,
+        data_path: str = p.DATA_PATH,
         embedding_model: str = EMBEDDING_MODEL,
-        collection_name: str = COLLECTION_NAME,
+        collection_name: str = p.COLLECTION_NAME,
     ):
         self.model = model
         self.llm_base_url = llm_base_url
-        self.max_conversation_length = 10
+        self.max_conversation_length = p.CONVERSATION_LENTGH
         self.conversation = deque(maxlen=self.max_conversation_length)
         self.rag_conversation = deque(maxlen=self.max_conversation_length)
         self.data_path = data_path
         self.embedding_model = embedding_model
         self.collection_name = collection_name
         self.vs_client = chromadb.PersistentClient(
-            path=VECTOR_DB_PATH, settings=chromadb.Settings(allow_reset=True)
+            path=p.VECTOR_DB_PATH, settings=chromadb.Settings(allow_reset=True)
         )
         self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=self.embedding_model
@@ -351,12 +350,12 @@ class RAGTools:
             os.path.exists(self.data_path)
             and os.listdir(self.data_path)
             and (
-                not os.path.exists(VECTOR_DB_PATH)
-                or not [f.path for f in os.scandir(VECTOR_DB_PATH) if f.is_dir()]
+                not os.path.exists(p.VECTOR_DB_PATH)
+                or not [f.path for f in os.scandir(p.VECTOR_DB_PATH) if f.is_dir()]
             )
         )
 
-    def setup_vec_store(self, collection_name: str = COLLECTION_NAME) -> None:
+    def setup_vec_store(self, collection_name: str = p.COLLECTION_NAME) -> None:
         "Vector Store Initialization Setup"
 
         if self._check_initdb_conditions():
@@ -449,7 +448,7 @@ def make_interface(ragsst: RAGTools) -> Any:
         gr.Textbox(label="Answer", lines=14),
         description="Query an LLM about information from your documents.",
         allow_flagging="manual",
-        flagging_dir="exports/rag_query",
+        flagging_dir=p.EXPORT_PATH + "/rag_query",
         flagging_options=[("Export", "export")],
         additional_inputs=[
             gr.Slider(
@@ -472,7 +471,7 @@ def make_interface(ragsst: RAGTools) -> Any:
         gr.Textbox(label="Related Content", lines=20),
         description="Find information in your documents.",
         allow_flagging="manual",
-        flagging_dir="exports/semantic_retrieval",
+        flagging_dir=p.EXPORT_PATH + "/semantic_retrieval",
         flagging_options=[("Export", "export")],
         additional_inputs=[
             gr.Slider(1, 5, value=2, step=1, label="Top n results", info=pinfo.get("TopnR")),
@@ -529,7 +528,7 @@ def make_interface(ragsst: RAGTools) -> Any:
 
                 def make_db(data_path, collection_name, embedding_model):
                     if collection_name is None:
-                        collection_name = COLLECTION_NAME
+                        collection_name = p.COLLECTION_NAME
                     ragsst.set_data_path(data_path)
                     ragsst.set_embeddings_model(embedding_model)
                     ragsst.make_collection(data_path, collection_name)
@@ -573,7 +572,7 @@ def make_interface(ragsst: RAGTools) -> Any:
                             )
 
                 emb_model = gr.Dropdown(
-                    choices=EMBEDDING_MODELS,
+                    choices=p.EMBEDDING_MODELS,
                     value=EMBEDDING_MODEL,
                     label="Embedding Model",
                     interactive=True,
@@ -611,7 +610,7 @@ def make_interface(ragsst: RAGTools) -> Any:
 
                 pull_model_name = gr.Dropdown(
                     info="Download a LLM (Internet connection is required)",
-                    choices=LLM_CHOICES,
+                    choices=p.LLM_CHOICES,
                     allow_custom_value=True,
                     value=MODEL,
                     label="LLM",
