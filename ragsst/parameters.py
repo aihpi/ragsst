@@ -24,3 +24,7 @@ LLM_CHOICES = ["llama3", "phi3", "mistral", "gemma", "qwen2", "dolphin-llama3", 
 # Other Features
 EXPORT_PATH = "exports"
 CONVERSATION_LENTGH = 10  # Max number of interactions kept for dialogue history context
+
+# Internal
+LOG_DIR = 'log'
+LOG_FILE = 'info.log'

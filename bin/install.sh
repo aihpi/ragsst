@@ -8,4 +8,4 @@ source .myvenv/bin/activate && \
 echo 'Installing requirements...' && \
 pip3 install -r requirements.txt
 echo 'Pulling ollama model...' && \
-ollama pull mistral || echo 'choose and download a model with $ ollama pull <your_model_of_choice>'
+ollama pull llama3 || echo 'choose and download a model with $ ollama pull <your_model_of_choice>'

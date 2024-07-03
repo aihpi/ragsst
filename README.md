@@ -67,7 +67,7 @@ $ ollama pull llama3
 - Start the tool
 
 ```shell
-$ python3 ragsst.py
+$ python3 app.py
 ```
 
 - Open the provided URL on your web browser

@@ -44,9 +44,6 @@ local_*
 # Compact code, bins
 *.tar
 
-# Interface related
-flagged/
-
 # Other
 todo.txt
 to-do.txt
