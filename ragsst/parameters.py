@@ -12,6 +12,7 @@ COLLECTION_NAME = "my_docs"
 # Text embedding models choices
 EMBEDDING_MODELS = [
     "multi-qa-mpnet-base-cos-v1",
+    "nomic-ai/nomic-embed-text-v1.5",
     "all-mpnet-base-v2",
     "multi-qa-MiniLM-L6-cos-v1",
     "all-MiniLM-L6-v2",
