@@ -1,3 +1,4 @@
+[![logo.png](images/logo.png)](https://hpi.de/en/kisz/home.html)
 
 # RAGSST
 
@@ -7,13 +8,13 @@ A quick start, locally-run tool to test and use as basis for various document-re
 
 - Rag Query: Prompt an LLM that uses relevant context to answer your queries.
 - Semantic Retrieval: Retrieve relevant passages from documents, showing sources and relevance.
-- Rag Chat: Interact with an LLM making that utilizes both document retrieval and chat history.
+- Rag Chat: Interact with an LLM that utilizes document retrieval and chat history.
 - LLM Chat: Chat and test a local LLM, without document context.
 
+![RAGSST](images/local-ragtool-demo.gif)
 
 The interface is divided into tabs for users to select and try the feature for the desired use case. 
 The implementation is focused on simplicity, low-level components, and modularity, in order to depict the working principles and core elements, allowing developers and Python enthusiasts to modify and build upon.
-
 
 ### Installation
 
