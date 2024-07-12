@@ -6,9 +6,9 @@
 
 A quick start, locally-run tool to test and use as basis for various document-related use cases:
 
-- Rag Query: Prompt an LLM that uses relevant context to answer your queries.
+- Rag Query: Prompt a LLM that uses relevant context to answer your queries.
 - Semantic Retrieval: Retrieve relevant passages from documents, showing sources and relevance.
-- Rag Chat: Interact with an LLM that utilizes document retrieval and chat history.
+- Rag Chat: Interact with a LLM that utilizes document retrieval and chat history.
 - LLM Chat: Chat and test a local LLM, without document context.
 
 ![RAGSST](images/local-ragtool-demo.gif)
@@ -18,7 +18,7 @@ The implementation is focused on simplicity, low-level components, and modularit
 
 ### Installation
 
-Download or clone the repository
+Download or clone the repository.
 
 On bash, you can run the following installation script:
 
@@ -30,7 +30,7 @@ $ bin/install.sh
 
 **Alternatively, install it manually:**
 
-#### Create and activate a virtual environment
+#### Create and activate a virtual environment (optional)
 
 ```shell
 $ python3 -m venv .myvenv
@@ -51,11 +51,11 @@ Install it to run large language models locally
 $ curl -fsSL https://ollama.ai/install.sh | sh
 ```
 
-Or follow the installation instructions for your operating system:
+Or follow the installation instructions for your operating system: [Install Ollama](https://ollama.com/download)
 
-[Install Ollama](https://ollama.com/download)
+Choose and download a LLM [model](https://ollama.com/library) [*]
 
-Choose and download an LLM model. For example:
+For example:
 
 ```shell
 $ ollama pull llama3
@@ -65,7 +65,7 @@ $ ollama pull llama3
 ### Usage
 
 - Place your documents on the intended data folder (default: `data/`).
-- Start the tool
+- Start the tool [†]
 
 ```shell
 $ python3 app.py
@@ -73,6 +73,7 @@ $ python3 app.py
 
 - Open the provided URL on your web browser
 - Enjoy
+
 
 ### Key Settings
 
@@ -89,6 +90,12 @@ $ python3 app.py
 - Temp: This affects the “randomness” of the answers  by scaling the probability distribution of the output elements. Increasing the temperature will make the model answer more creatively.
 
 - Top p: Works together with Top k, but instead of selecting a fixed number of tokens, it selects enough tokens to cover the given cumulative probability. A higher value will produce more varied text, and a lower value will lead to more focused and conservative answers.
+
+---
+
+[*] For notebooks/PCs with dedicated GPUs, models such as llama3, mistral or gemma are recommended. Otherwise, you could try smaller models such as phi3 or qwen2 for faster performance.
+
+[†] If you chose the installation with a virtual environment, remember to activate it before starting the application by running ```$ source .myvenv/bin/activate```
 
 ---
 
