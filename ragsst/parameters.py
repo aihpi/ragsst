@@ -1,4 +1,5 @@
 from os import getenv
+from urllib.parse import urljoin
 
 # Configuration parameters by area
 
@@ -19,7 +20,7 @@ EMBEDDING_MODELS = [
 ]
 
 # LLM (ollama)
-LLMBASEURL = getenv("OLLAMA_HOST", "http://localhost:11434/api")
+LLMBASEURL = urljoin(getenv("OLLAMA_HOST", "http://localhost:11434"), "api")
 LLM_CHOICES = ["llama3", "phi3", "mistral", "gemma", "qwen2", "dolphin-llama3", "zephyr"]
 
 # Other Features
