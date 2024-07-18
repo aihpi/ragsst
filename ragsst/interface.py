@@ -29,7 +29,7 @@ def make_interface(ragsst: RAGTool) -> Any:
         flagging_options=[("Export", "export")],
         additional_inputs=[
             gr.Slider(
-                0, 1, value=0.3, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
+                0, 1, value=0.5, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
             ),
             gr.Slider(1, 5, value=3, step=1, label="Top n results", info=pinfo.get("TopnR")),
             gr.Slider(1, 10, value=5, step=1, label="Top k", info=pinfo.get("Top k")),
@@ -51,9 +51,9 @@ def make_interface(ragsst: RAGTool) -> Any:
         flagging_dir=os.path.join(p.EXPORT_PATH, "semantic_retrieval"),
         flagging_options=[("Export", "export")],
         additional_inputs=[
-            gr.Slider(1, 5, value=2, step=1, label="Top n results", info=pinfo.get("TopnR")),
+            gr.Slider(1, 5, value=3, step=1, label="Top n results", info=pinfo.get("TopnR")),
             gr.Slider(
-                0, 1, value=0.4, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
+                0, 1, value=0.5, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
             ),
         ],
         additional_inputs_accordion=gr.Accordion(label="Retrieval Settings", open=False),
@@ -66,10 +66,10 @@ def make_interface(ragsst: RAGTool) -> Any:
         chatbot=gr.Chatbot(height=500),
         additional_inputs=[
             gr.Slider(
-                0, 1, value=0.4, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
+                0, 1, value=0.5, step=0.1, label="Relevance threshold", info=pinfo.get("Rth")
             ),
             gr.Slider(1, 5, value=3, step=1, label="Top n results", info=pinfo.get("TopnR")),
-            gr.Slider(1, 10, value=3, step=1, label="Top k", info=pinfo.get("Top k")),
+            gr.Slider(1, 10, value=5, step=1, label="Top k", info=pinfo.get("Top k")),
             gr.Slider(
                 0.1, 1, value=0.9, step=0.1, label="Top p", info=pinfo.get("Top p"), visible=False
             ),

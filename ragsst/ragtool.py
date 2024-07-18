@@ -41,7 +41,7 @@ class RAGTool:
             path=p.VECTOR_DB_PATH, settings=chromadb.Settings(allow_reset=True)
         )
         self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name=self.embedding_model
+            model_name=self.embedding_model, trust_remote_code=True
         )
 
     # ============== LLM (Ollama) ==============================================
@@ -380,7 +380,8 @@ class RAGTool:
     def set_embeddings_model(self, emb_model: str) -> None:
         self.embedding_model = emb_model
         self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name=self.embedding_model, trust_remote_code=True,
+            model_name=self.embedding_model,
+            trust_remote_code=True,
         )
         logger.debug(f"Embedding Model: {self.embedding_model}")
 
