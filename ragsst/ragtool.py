@@ -282,7 +282,10 @@ class RAGTool:
             f"rag_query args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
         )
         relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
-        logger.debug(f"\nRelevant Context:\n{relevant_text}")
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(
+                f"\nRelevant Context:\n{self.retrieve_content_w_meta_info(user_msg, nresults=nresults, sim_th=sim_th)}"
+            )
         if not relevant_text:
             return "Relevant passage not found. Try lowering the relevance threshold."
         contextualized_query = self.get_context_prompt(user_msg, relevant_text)
