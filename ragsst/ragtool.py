@@ -246,8 +246,8 @@ class RAGTool:
         if sim_th is not None:
             similarities = [1 - d for d in query_result.get("distances")[0]]
             relevant_docs = [d for d, s in zip(docs, similarities) if s >= sim_th]
-            return ''.join(relevant_docs)
-        return ''.join(docs)
+            return '\n'.join(relevant_docs)
+        return '\n'.join(docs)
 
     # ============== Retrieval Augemented Generation ===========================
 
