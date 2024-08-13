@@ -36,6 +36,8 @@ LLM_CHOICES = [
 # Other Features
 EXPORT_PATH = "exports"
 CONVERSATION_LENTGH = 10  # Max number of interactions kept for dialogue history context
+KEYWORD_SEARCH = True  # Alternative keyword search
+FILTER_BY_KEYWORD = True  # Optimize semantic retrieval with keyword
 
 # Internal
 LOG_DIR = 'log'

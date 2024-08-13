@@ -7,3 +7,4 @@ einops>=0.8.0
 chromadb>=0.4.20
 gradio>=4.19.2
 tqdm>=4.66.1
+yake>=0.4.8

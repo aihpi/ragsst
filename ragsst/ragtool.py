@@ -7,6 +7,7 @@ from tqdm import tqdm
 from typing import List, Any, Generator, Deque
 from collections import deque
 from ragsst.utils import list_files, read_file, split_text, hash_file
+from yake import KeywordExtractor
 import ragsst.parameters as p
 
 
@@ -43,6 +44,14 @@ class RAGTool:
         self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=self.embedding_model, trust_remote_code=True
         )
+        if p.KEYWORD_SEARCH or p.FILTER_BY_KEYWORD:
+            self.kw_extractor = KeywordExtractor(
+                lan="auto",
+                n=1,
+                dedupLim=0.9,
+                windowsSize=1,
+                top=1,
+            )
 
     # ============== LLM (Ollama) ==============================================
 
@@ -237,16 +246,42 @@ class RAGTool:
         return "\n-----------------\n\n".join(docs_selection)
 
     def get_relevant_text(
-        self, query: str = '', nresults: int = 2, sim_th: float | None = None
+        self,
+        query: str = '',
+        nresults: int = 2,
+        sim_th: float | None = None,
+        keyword_filter: bool = p.FILTER_BY_KEYWORD,
+        keyword_search: bool = p.KEYWORD_SEARCH,
     ) -> str:
         """Get relevant text from a collection for a given query"""
 
         query_result = self.collection.query(query_texts=query, n_results=nresults)
         docs = query_result.get('documents')[0]
+
         if sim_th is not None:
+            # Filter documents based on similarity threshold
             similarities = [1 - d for d in query_result.get("distances")[0]]
             relevant_docs = [d for d, s in zip(docs, similarities) if s >= sim_th]
-            return '\n'.join(relevant_docs)
+
+            if relevant_docs:
+                if keyword_filter:
+                    # Extract the main keyword from the query
+                    kw = self.kw_extractor.extract_keywords(query)[0][0]
+                    # Filter relevant documents based on the extracted keyword
+                    filtered_docs = self.filter_strings(relevant_docs, kw)
+
+                    if filtered_docs:
+                        return '\n'.join(filtered_docs)
+
+                return '\n'.join(relevant_docs)
+
+            # If no relevant documents found after previous criterias perform keyword search if enabled
+            if keyword_search:
+                kw = self.kw_extractor.extract_keywords(query)[0][0]
+                docs = self.collection.query(
+                    query_texts="", n_results=nresults, where_document={"$contains": kw}
+                ).get('documents')[0]
+
         return '\n'.join(docs)
 
     # ============== Retrieval Augemented Generation ===========================
@@ -284,8 +319,9 @@ class RAGTool:
         relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(
-                f"\nRelevant Context:\n{self.retrieve_content_w_meta_info(user_msg, nresults=nresults, sim_th=sim_th)}"
+                f"\nSemantic Search Context:\n{self.retrieve_content_w_meta_info(user_msg, nresults=nresults, sim_th=sim_th)}"
             )
+            logger.debug(f"\nPassed Relevant Context:\n{relevant_text}")
         if not relevant_text:
             return "Relevant passage not found. Try lowering the relevance threshold."
         contextualized_query = self.get_context_prompt(user_msg, relevant_text)
@@ -328,6 +364,7 @@ class RAGTool:
         relevant_text = self.get_relevant_text(standalone_query, nresults=nresults, sim_th=sim_th)
         if not relevant_text:
             return MSG_NO_CONTEXT
+        logger.debug(f"\nPassed Relevant Context:\n{relevant_text}")
         contextualized_standalone_query = self.get_context_prompt(standalone_query, relevant_text)
 
         bot_response = self.llm_generate(
@@ -429,3 +466,8 @@ class RAGTool:
 
     def clear_ragchat_hist(self) -> None:
         self.rag_conversation.clear()
+
+    def filter_strings(self, docs: List, keyword: str) -> List[str]:
+        logger.debug(f"Chosen Keyword: {keyword}")
+        keyword = keyword.lower()
+        return [s for s in docs if keyword in s.lower()]
