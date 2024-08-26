@@ -22,8 +22,8 @@ EMBEDDING_MODELS = [
 # LLM (ollama)
 LLMBASEURL = urljoin(getenv("OLLAMA_HOST", "http://localhost:11434"), "api")
 LLM_CHOICES = [
-    "llama3",
     "llama3.1",
+    "llama3",
     "phi3",
     "mistral",
     "gemma2",
