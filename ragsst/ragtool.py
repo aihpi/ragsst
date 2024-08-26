@@ -256,32 +256,36 @@ class RAGTool:
         """Get relevant text from a collection for a given query"""
 
         query_result = self.collection.query(query_texts=query, n_results=nresults)
-        docs = query_result.get('documents')[0]
 
         if sim_th is not None:
             # Filter documents based on similarity threshold
-            similarities = [1 - d for d in query_result.get("distances")[0]]
-            relevant_docs = [d for d, s in zip(docs, similarities) if s >= sim_th]
+            filtered_query = self._filter_query_by_similarity(query_result, sim_th)
 
-            if relevant_docs:
+            if filtered_query:
                 if keyword_filter:
                     # Extract the main keyword from the query
                     kw = self.kw_extractor.extract_keywords(query)[0][0]
                     # Filter relevant documents based on the extracted keyword
-                    filtered_docs = self.filter_strings(relevant_docs, kw)
+                    kw_filtered_query = self._filter_query_by_keyword(filtered_query, kw)
 
-                    if filtered_docs:
-                        return '\n'.join(filtered_docs)
+                    if kw_filtered_query:
+                        logger.debug("Semantic retrieval succesfully filtered by keyword")
+                        filtered_query = kw_filtered_query
 
+                relevant_docs = filtered_query.get('documents')[0]
+                logger.info(f"Sources:  {', '.join(self._get_sources(filtered_query))}")
                 return '\n'.join(relevant_docs)
 
             # If no relevant documents found after previous criterias perform keyword search if enabled
             if keyword_search:
                 kw = self.kw_extractor.extract_keywords(query)[0][0]
-                docs = self.collection.query(
+                logger.debug(f"No results by semantic search. Searching by Keyword: {kw}")
+                query_result = self.collection.query(
                     query_texts="", n_results=nresults, where_document={"$contains": kw}
-                ).get('documents')[0]
+                )
 
+        docs = query_result.get('documents')[0]
+        logger.info(f"Sources:  {', '.join(self._get_sources(query_result))}")
         return '\n'.join(docs)
 
     # ============== Retrieval Augemented Generation ===========================
@@ -317,11 +321,8 @@ class RAGTool:
             f"rag_query args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
         )
         relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(
-                f"\nSemantic Search Context:\n{self.retrieve_content_w_meta_info(user_msg, nresults=nresults, sim_th=sim_th)}"
-            )
-            logger.debug(f"\nPassed Relevant Context:\n{relevant_text}")
+        logger.debug(f"\nSelected Relevant Context:\n{relevant_text}")
+
         if not relevant_text:
             return "Relevant passage not found. Try lowering the relevance threshold."
         contextualized_query = self.get_context_prompt(user_msg, relevant_text)
@@ -347,6 +348,7 @@ class RAGTool:
             relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
             if not relevant_text:
                 return MSG_NO_CONTEXT
+            logger.debug(f"\nSelected Relevant Context:\n{relevant_text}")
             self.rag_conversation.append('Query: ' + user_msg)
             contextualized_query = self.get_context_prompt(user_msg, relevant_text)
             bot_response = self.llm_generate(
@@ -471,3 +473,50 @@ class RAGTool:
         logger.debug(f"Chosen Keyword: {keyword}")
         keyword = keyword.lower()
         return [s for s in docs if keyword in s.lower()]
+
+    def _filter_by_similarity(self, query_result: dict, sim_th: float) -> List[str]:
+        """Filter documents based on similarity threshold and return relevant docs"""
+        similarities = [1 - d for d in query_result.get('distances')[0]]
+        relevant_docs = [
+            doc for doc, s in zip(query_result.get('documents')[0], similarities) if s >= sim_th
+        ]
+        return relevant_docs
+
+    def _filter_query_by_similarity(self, query_result: dict, sim_th: float) -> dict:
+        """Filter query results based on similarity threshold."""
+        similarities = [round(1 - d, 2) for d in query_result.get('distances')[0]]
+        relevant_docs = [
+            doc for doc, s in zip(query_result.get('documents')[0], similarities) if s >= sim_th
+        ]
+        if relevant_docs:
+            metadatas = [
+                meta
+                for meta, s in zip(query_result.get('metadatas')[0], similarities)
+                if s >= sim_th
+            ]
+            query_result['documents'][0] = relevant_docs
+            query_result['metadatas'][0] = metadatas
+            return query_result
+        return {}
+
+    def _filter_query_by_keyword(self, query_result: dict, keyword: str) -> dict:
+        """Filter query results based on keyword."""
+        logger.debug(f"Chosen Keyword: {keyword}")
+        keyword = keyword.lower()
+        relevant_docs = [doc for doc in query_result.get('documents')[0] if keyword in doc.lower()]
+        if relevant_docs:
+            metadatas = [
+                meta
+                for meta, doc in zip(
+                    query_result.get('metadatas')[0], query_result.get('documents')[0]
+                )
+                if keyword in doc.lower()
+            ]
+            query_result['documents'][0] = relevant_docs
+            query_result['metadatas'][0] = metadatas
+            return query_result
+        return {}
+
+    def _get_sources(self, query_result: dict) -> set:
+        """Get sources from the query results."""
+        return {meta.get("source") for meta in query_result['metadatas'][0]}
