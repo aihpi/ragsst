@@ -69,7 +69,8 @@ class RAGTool:
         try:
             r = requests.post(url, json=data)
             response_dic = json.loads(r.text)
-            return response_dic.get('response', '')
+            response = response_dic.get('response', '')
+            return response if response else response_dic.get('error', 'Check Ollama Settings')
 
         except Exception as e:
             logger.error(f"Exception: {e}\nResponse:{response_dic}")
