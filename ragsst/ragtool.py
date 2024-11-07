@@ -158,7 +158,7 @@ class RAGTool:
 
         self.set_collection(collection_name, None)
 
-        files = list_files(data_path, extensions=('.txt', '.pdf'))
+        files = list_files(data_path, extensions=('.txt', '.pdf', '.docx'))
         logger.info(f"{len(files)} files found.")
         logger.debug(f"Files: {', '.join([f.replace(data_path, '', 1) for f  in files])}")
         logger.info("Populating embeddings database...")

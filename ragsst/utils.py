@@ -2,6 +2,7 @@ from typing import List, Tuple
 import os
 from pypdf import PdfReader
 import hashlib
+from docx import Document
 
 
 def list_files(
@@ -35,6 +36,9 @@ def read_file(doc: str) -> str:
     elif doc.endswith('.pdf'):
         pdf_reader = PdfReader(doc)
         text = ''.join([page.extract_text() for page in pdf_reader.pages])
+    elif doc.endswith('.docx'):
+        docx_doc = Document(doc)
+        text = '\n'.join([para.text for para in docx_doc.paragraphs])
     return text
 
 
