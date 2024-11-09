@@ -1,4 +1,4 @@
-[![logo.png](images/logo.png)](https://hpi.de/en/kisz/home.html)
+[![logo.png](images/logo.png)](https://hpi.de/en/research/hpi-data-center/ai-service-center/)
 
 # RAGSST
 
@@ -122,4 +122,4 @@ $ export LOG_LEVEL='DEBUG'
 
 ## License
 
-[GPLv3](./LICENCE)
+[GPLv3](./LICENSE)
