@@ -93,7 +93,7 @@ $ python3 app.py
 
 ---
 
-[*] For notebooks/PCs with dedicated GPUs, models such as llama3, mistral or gemma are recommended. Otherwise, you could try smaller models such as phi3 or qwen2 for faster performance.
+[*] Performance consideration: On notebooks/PCs with dedicated GPUs, models such as llama3.1, mistral or gemma2 should be able to run all the models smoothly and rapidly. On a standard notebook, or if you encounter any memory of performance issues, prioritize smaller models such as llama3.2 or qwen2.5:3b.
 
 [†] If you chose the installation with a virtual environment, remember to activate it before starting the application by running ```$ source .myvenv/bin/activate```
 

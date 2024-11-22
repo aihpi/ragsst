@@ -23,14 +23,16 @@ EMBEDDING_MODELS = [
 LLMBASEURL = urljoin(getenv("OLLAMA_HOST", "http://localhost:11434"), "api")
 LLM_CHOICES = [
     "llama3.1",
-    "llama3",
-    "phi3",
+    "llama3.2",
+    "phi3.5",
     "mistral",
     "gemma2",
-    "qwen2",
+    "qwen2.5",
     "llama-3-sauerkrautlm",
     "dolphin-llama3",
     "zephyr",
+    "qwen2.5:3b",
+    "smollm2",
 ]
 
 # Other Features
