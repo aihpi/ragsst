@@ -58,7 +58,7 @@ Choose and download a LLM [model](https://ollama.com/library) [*]
 For example:
 
 ```shell
-$ ollama pull llama3.1
+$ ollama pull llama3.2
 ```
 ---
 
