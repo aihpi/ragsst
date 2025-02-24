@@ -273,21 +273,24 @@ class RAGTool:
                         logger.debug("Semantic retrieval succesfully filtered by keyword")
                         filtered_query = kw_filtered_query
 
-                relevant_docs = filtered_query.get('documents')[0]
-                logger.info(f"Sources:  {', '.join(self._get_sources(filtered_query))}")
-                return '\n'.join(relevant_docs)
+                query_result = filtered_query
 
             # If no relevant documents found after previous criterias perform keyword search if enabled
-            if keyword_search:
+            elif keyword_search:
                 kw = self.kw_extractor.extract_keywords(query)[0][0]
                 logger.debug(f"No results by semantic search. Searching by Keyword: {kw}")
                 query_result = self.collection.query(
                     query_texts="", n_results=nresults, where_document={"$contains": kw}
                 )
 
-        docs = query_result.get('documents')[0]
-        logger.info(f"Sources:  {', '.join(self._get_sources(query_result))}")
-        return '\n'.join(docs)
+            else:
+                logger.info("No results by semantic search")
+                return ""
+
+        relevant_docs = query_result.get('documents')[0]
+        if relevant_docs:
+            logger.info(f"Sources:  {', '.join(self._get_sources(query_result))}")
+        return '\n'.join(relevant_docs)
 
     # ============== Retrieval Augemented Generation ===========================
 
@@ -322,10 +325,10 @@ class RAGTool:
             f"rag_query args: sim_th: {sim_th}, nresults: {nresults}, top_k: {top_k}, top_p: {top_p}, temp: {temp}"
         )
         relevant_text = self.get_relevant_text(user_msg, nresults=nresults, sim_th=sim_th)
-        logger.debug(f"\nSelected Relevant Context:\n{relevant_text}")
-
         if not relevant_text:
             return "Relevant passage not found. Try lowering the relevance threshold."
+        logger.debug(f"\nSelected Relevant Context:\n{relevant_text}")
+
         contextualized_query = self.get_context_prompt(user_msg, relevant_text)
         bot_response = self.llm_generate(contextualized_query, top_k=top_k, top_p=top_p, temp=temp)
         return bot_response
