@@ -53,7 +53,7 @@ $ curl -fsSL https://ollama.ai/install.sh | sh
 
 Or follow the installation instructions for your operating system: [Install Ollama](https://ollama.com/download)
 
-Choose and download a LLM [model](https://ollama.com/library) [*]
+Choose and download a LLM [model](https://ollama.com/library) [\*]
 
 For example:
 
@@ -93,7 +93,7 @@ $ python3 app.py
 
 ---
 
-[*] Performance consideration: On notebooks/PCs with dedicated GPUs, models such as llama3.1, mistral or gemma2 should be able to run all the models smoothly and rapidly. On a standard notebook, or if you encounter any memory of performance issues, prioritize smaller models such as llama3.2 or qwen2.5:3b.
+[\*] Performance consideration: On notebooks/PCs with dedicated GPUs, models such as llama3.1, mistral or gemma2 should be able to run smoothly and rapidly. On a standard notebook, or if you encounter any memory of performance issues, prioritize smaller models such as llama3.2 or qwen2.5:3b.
 
 [†] If you chose the installation with a virtual environment, remember to activate it before starting the application by running ```$ source .myvenv/bin/activate```
 
@@ -118,7 +118,9 @@ For more detailed logging, set the `LOG_LEVEL` environment variable:
 ```shell
 $ export LOG_LEVEL='DEBUG'
 ```
----
+
+## Author
+- [Joaquin Gomez Prats](https://github.com/slovanos)
 
 ## License
 
