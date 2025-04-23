@@ -16,6 +16,8 @@ A quick start, locally-run tool to test and use as basis for various document-re
 The interface is divided into tabs for users to select and try the feature for the desired use case. 
 The implementation is focused on simplicity, low-level components, and modularity, in order to depict the working principles and core elements, allowing developers and Python enthusiasts to modify and build upon.
 
+Rag systems rely on sentence embeddings and vector databases. More information on embeddings can be found in our MOOC [Understanding Embeddings for Natural Language Processing](https://open.hpi.de/courses/embeddingsfornlp-kisz2023)
+
 ### Installation
 
 Download or clone the repository.
