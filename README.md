@@ -1,8 +1,13 @@
-<div style="background-color: #ffffff; color: #000000; padding: 10px;">
-<div style="display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; color: #000000; padding: 10px;">
-    <img src="./images/logo_kisz.png" height="130" style="margin-right: auto;" alt="Logo of the AI Service Center Berlin-Brandenburg.">
-    <img src="./images/logo_bmbf.jpeg" height="150" style="margin-left: auto;" alt="Logo of the German Federal Ministry of Education and Research: Gefördert vom Bundesministerium für Bildung und Forschung.">
-</div>
+<table width="100%">
+  <tr>
+    <td align="left" valign="top">
+      <img src="./images/logo_kisz.png" height="130" alt="Logo of the AI Service Center Berlin-Brandenburg.">
+    </td>
+    <td align="right" valign="top">
+      <img src="./images/logo_bmbf.jpeg" height="150" alt="Logo of the German Federal Ministry of Education and Research: Gefördert vom Bundesministerium für Bildung und Forschung.">
+    </td>
+  </tr>
+</table>
 
 #
 
