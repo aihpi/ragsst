@@ -1,105 +1,108 @@
-[![logo.png](images/logo.png)](https://hpi.de/en/research/hpi-data-center/ai-service-center/)
+<div style="display: flex; justify-content: space-between; align-items: center; background-color: #ffffff; color: #000000; padding: 10px;">
+    <img src="./images/logo_kisz.png" height="130" style="margin-right: auto;" alt="Logo of the AI Service Center Berlin-Brandenburg.">
+    <img src="./images/logo_bmbf.jpeg" height="150" style="margin-left: auto;" alt="Logo of the German Federal Ministry of Education and Research: Gefördert vom Bundesministerium für Bildung und Forschung.">
+</div>
 
-# RAGSST
+#
 
-## Retrieval Augmented Generation and Semantic-search Tool
+# Ask your documents!
+
+## Retrieval Augmented Generation and Semantic-Search Tool (RAGSST)
 
 A quick start, locally-run tool to test and use as basis for various document-related use cases:
 
-- Rag Query: Prompt a LLM that uses relevant context to answer your queries.
+- Rag Query: Prompt an LLM that uses relevant context to answer your queries.
 - Semantic Retrieval: Retrieve relevant passages from documents, showing sources and relevance.
-- Rag Chat: Interact with a LLM that utilizes document retrieval and chat history.
+- Rag Chat: Interact with an LLM that utilizes document retrieval and chat history.
 - LLM Chat: Chat and test a local LLM, without document context.
 
 ![RAGSST](images/local-ragtool-demo.gif)
 
-The interface is divided into tabs for users to select and try the feature for the desired use case. 
-The implementation is focused on simplicity, low-level components, and modularity, in order to depict the working principles and core elements, allowing developers and Python enthusiasts to modify and build upon.
+The interface is divided into tabs for users to select and try the feature for the desired use case. The implementation is focused on simplicity, low-level components, and modularity, in order to depict the working principles and core elements, allowing developers and Python enthusiasts to modify and build upon.
 
-Rag systems rely on sentence embeddings and vector databases. More information on embeddings can be found in our MOOC [Understanding Embeddings for Natural Language Processing](https://open.hpi.de/courses/embeddingsfornlp-kisz2023)
+Rag systems rely on sentence embeddings and vector databases. More information on embeddings can be found in our MOOC [Understanding Embeddings for Natural Language Processing](https://open.hpi.de/courses/embeddingsfornlp-kisz2023).
 
-### Installation
+## Installation
 
-Download or clone the repository.
+1. Download or clone the repository.
 
-On bash, you can run the following installation script:
-
-```shell
-$ bin/install.sh
-```
-
----
-
-**Alternatively, install it manually:**
-
-#### Create and activate a virtual environment (optional)
+2. Create and activate a virtual environment (optional).
 
 ```shell
 $ python3 -m venv .myvenv
 $ source .myvenv/bin/activate
 ```
 
-#### Install dependencies
+### Automatic Installation
+
+3. In bash, run the following installation script:
 
 ```shell
-$ pip3 install -r requirements.txt
+(.myvenv)$ bin/install.sh
 ```
 
-#### Ollama
+### Manual Installation
 
-Install it to run large language models locally
+3. Install dependencies.
 
 ```shell
-$ curl -fsSL https://ollama.ai/install.sh | sh
+(.myvenv)$ pip3 install -r requirements.txt
 ```
 
-Or follow the installation instructions for your operating system: [Install Ollama](https://ollama.com/download)
-
-Choose and download a LLM [model](https://ollama.com/library) [\*]
-
-For example:
+4. Install **Ollama** to run Large Language Models (LLMs) locally. (Or follow the installation instructions for your operating system: [Install Ollama](https://ollama.com/download)).
 
 ```shell
-$ ollama pull llama3.2
+(.myvenv)$ curl -fsSL https://ollama.ai/install.sh | sh
 ```
----
 
-### Usage
-
-- Place your documents on the intended data folder (default: `data/`).
-- Start the tool [†]
+5. Choose and download an LLM [model](https://ollama.com/library) [\*]. For example:
 
 ```shell
-$ python3 app.py
+(.myvenv)$ ollama pull llama3.2
 ```
 
-- Open the provided URL on your web browser
-- Enjoy
+## Usage
+
+1. Place your documents on the intended data folder (default: `data/`).
+
+2. Activate your virtual environment.
+
+```shell
+$ source .myvenv/bin/activate
+```
+
+3. Start the tool. [†]
+
+```shell
+(.myvenv)$ python3 app.py
+```
+
+4. Open the provided URL on your web browser.
 
 
-### Key Settings
+## Key Settings
 
-#### Retrieval Parameters
+### Retrieval Parameters
 
-- Relevance threshold: Sets the minimum similarity threshold for retrieved passages. Lower values result in more selective retrieval.
+- **Relevance threshold**: Sets the minimum similarity threshold for retrieved passages. Lower values result in more selective retrieval.
 
-- Top n results: Specifies the maximum number of relevant passages to retrieve.
+- **Top n results**: Specifies the maximum number of relevant passages to retrieve.
 
-#### Additional Input parameters for the LLMs
+### Additional Input parameters for the LLMs
 
-- Top k: Ranks the output tokens in descending order of probability, selects the first k tokens to create a new distribution, and it samples the output from it. Higher values result in more diverse answers, and lower values will produce more conservative answers.
+- **Top k**: Ranks the output tokens in descending order of probability, selects the first *k* tokens to create a new distribution, and it samples the output from it. Higher values result in more diverse answers, and lower values will produce more conservative answers.
 
-- Temp: This affects the “randomness” of the answers  by scaling the probability distribution of the output elements. Increasing the temperature will make the model answer more creatively.
+- **Temperature (Temp)**: This affects the 'randomness' of the answers  by scaling the probability distribution of the output elements. Increasing the temperature will make the model answer more creatively.
 
-- Top p: Works together with Top k, but instead of selecting a fixed number of tokens, it selects enough tokens to cover the given cumulative probability. A higher value will produce more varied text, and a lower value will lead to more focused and conservative answers.
+- **Top p**: Works together with *Top k*, but instead of selecting a fixed number of tokens, it selects enough tokens to cover the given cumulative probability. A higher value will produce more varied text, and a lower value will lead to more focused and conservative answers.
+
+## FAQ
+
+Check out the [Frequently Asked Questions (FAQ)](./FAQ.md) and please let us know if you encounter any problems.
 
 ---
 
 [\*] Performance consideration: On notebooks/PCs with dedicated GPUs, models such as llama3.1, mistral or gemma2 should be able to run smoothly and rapidly. On a standard notebook, or if you encounter any memory of performance issues, prioritize smaller models such as llama3.2 or qwen2.5:3b.
-
-[†] If you chose the installation with a virtual environment, remember to activate it before starting the application by running ```$ source .myvenv/bin/activate```
-
----
 
 ## Development
 
@@ -122,7 +125,9 @@ $ export LOG_LEVEL='DEBUG'
 ```
 
 ## Author
-- [Joaquin Gomez Prats](https://github.com/slovanos)
+- [Joaquin Gomez Prats](https://github.com/slovanos) (App, Documentation, Learning Materials)
+- [Hanno Müller](https://github.com/hanno-mueller-HPI) (Documentation, Learning Materials, Maintenance)
+
 
 ## License
 
