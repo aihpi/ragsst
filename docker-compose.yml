@@ -6,7 +6,7 @@ services:
     container_name: ollama
     restart: unless-stopped
     ports:
-      - "11435:11434"
+      - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
       - ./entrypoint.sh:/entrypoint.sh
@@ -27,7 +27,7 @@ services:
       - ./exports:/app/exports
       - ./log:/app/log
     environment:
-      - "OLLAMA_HOST=http://ollama:11435/api"
+      - OLLAMA_HOST=http://ollama:11434
     restart: unless-stopped
     entrypoint: ["python3", "app.py"]
 

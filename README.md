@@ -67,9 +67,9 @@ $ source .myvenv/bin/activate
 (.myvenv)$ ollama pull llama3.2
 ```
 
-## Docker Compose Quick Start
+## Docker Compose Quick Start (currently no GPU support)
 
-1. Ensure you have Docker and Docker Compose installed, and an NVIDIA GPU with drivers and nvidia-docker runtime.
+1. Ensure you have Docker and Docker Compose installed.
 
 2. Build and start the app and Ollama:
 
@@ -77,7 +77,9 @@ $ source .myvenv/bin/activate
 docker compose up --build
 ```
 
-3. Wait for both services to start, then open [http://localhost:7860](http://localhost:7860) in your browser.
+3. Wait for both services to start, which will take several minutes. ragsst-app has loaded succesfully when it prints to the console: `Set Collection: my_docs. Embedding Model: multi-qa-mpnet-base-cos-v1`
+
+4. Open [http://localhost:7860](http://localhost:7860) in your browser.
 
 ## Usage
 

@@ -30,6 +30,7 @@ class RAGTool:
         embedding_model: str = EMBEDDING_MODEL,
         collection_name: str = p.COLLECTION_NAME,
     ):
+        #print("RAGTool __init__ started")
         self.model = model
         self.llm_base_url = llm_base_url
         self.max_conversation_length = p.CONVERSATION_LENTGH
@@ -38,13 +39,17 @@ class RAGTool:
         self.data_path = data_path
         self.embedding_model = embedding_model
         self.collection_name = collection_name
+        #print("Before chromadb.PersistentClient")
         self.vs_client = chromadb.PersistentClient(
             path=p.VECTOR_DB_PATH, settings=chromadb.Settings(allow_reset=True)
         )
+        print("Loading sentence transformer model for embeddings")
         self.embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(
             model_name=self.embedding_model, trust_remote_code=True
         )
+        print("Succesfully loaded sentence transformer model for embeddings")
         if p.KEYWORD_SEARCH or p.FILTER_BY_KEYWORD:
+            #print("Before KeywordExtractor")
             self.kw_extractor = KeywordExtractor(
                 lan="auto",
                 n=1,
@@ -52,6 +57,8 @@ class RAGTool:
                 windowsSize=1,
                 top=1,
             )
+            #print("After KeywordExtractor")
+        #print("RAGTool __init__ finished")
 
     # ============== LLM (Ollama) ==============================================
 
