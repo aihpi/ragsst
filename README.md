@@ -67,6 +67,18 @@ $ source .myvenv/bin/activate
 (.myvenv)$ ollama pull llama3.2
 ```
 
+## Docker Compose Quick Start
+
+1. Ensure you have Docker and Docker Compose installed, and an NVIDIA GPU with drivers and nvidia-docker runtime.
+
+2. Build and start the app and Ollama:
+
+```sh
+docker compose up --build
+```
+
+3. Wait for both services to start, then open [http://localhost:7860](http://localhost:7860) in your browser.
+
 ## Usage
 
 1. Place your documents on the intended data folder (default: `data/`).
