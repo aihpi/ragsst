@@ -67,20 +67,6 @@ $ source .myvenv/bin/activate
 (.myvenv)$ ollama pull llama3.2
 ```
 
-## Docker Compose Quick Start (currently no GPU support)
-
-1. Ensure you have Docker and Docker Compose installed.
-
-2. Build and start the app and Ollama:
-
-```sh
-docker compose up --build
-```
-
-3. Wait for both services to start, which will take several minutes. ragsst-app has loaded succesfully when it prints to the console: `Set Collection: my_docs. Embedding Model: multi-qa-mpnet-base-cos-v1`
-
-4. Open [http://localhost:7860](http://localhost:7860) in your browser.
-
 ## Usage
 
 1. Place your documents on the intended data folder (default: `data/`).
@@ -98,6 +84,29 @@ $ source .myvenv/bin/activate
 ```
 
 4. Open the provided URL on your web browser.
+
+## Docker Compose Quick Start
+
+1. Ensure you have Docker and Docker Compose installed.
+
+2. Install the [latest NVIDIA drivers](https://www.nvidia.com/en-us/drivers/) for your GPU on your host system. Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). (Only necessary for utilizing a GPU.)
+
+
+2. Build and start the app and Ollama, either in default CPU mode...
+
+```sh
+docker compose up --build
+```
+
+... or with a dedicated GPU.
+
+```sh
+docker compose -f docker-compose-gpu.yml up
+```
+
+3. Wait for both services to start, which will take several minutes on the first run. ragsst-app has loaded succesfully when it prints to the console: `Set Collection: my_docs. Embedding Model: multi-qa-mpnet-base-cos-v1`
+
+4. Open [http://localhost:7860](http://localhost:7860) in your browser.
 
 
 ## Key Settings
@@ -145,8 +154,8 @@ $ export LOG_LEVEL='DEBUG'
 ```
 
 ## Author
-- [Joaquin Gomez Prats](https://github.com/slovanos) (App, Documentation, Learning Materials)
-- [Hanno Müller](https://github.com/hanno-mueller-HPI) (Documentation, Learning Materials, Maintenance)
+- [Joaquin Gomez Prats](https://github.com/slovanos)
+- [Hanno Müller](https://github.com/hanno-mueller-HPI)
 
 
 ## License
