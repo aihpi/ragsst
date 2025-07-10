@@ -47,6 +47,8 @@ $ source .myvenv/bin/activate
 (.myvenv)$ bin/install.sh
 ```
 
+The script might not work for MacOS, please follow the manual installation instructions.
+
 ### Option 2: Manual Installation
 
 3. Install dependencies.
