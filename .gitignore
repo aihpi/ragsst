@@ -36,6 +36,8 @@ local_*
 
 # IDE
 .vscode/
+.DS_Store
+.idea/
 
 # mypy and pytest
 .mypy_cache/
