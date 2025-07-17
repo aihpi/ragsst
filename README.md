@@ -39,7 +39,7 @@ $ python3 -m venv .myvenv
 $ source .myvenv/bin/activate
 ```
 
-### Automatic Installation
+### Option 1: Automatic Installation
 
 3. In bash, run the following installation script:
 
@@ -47,7 +47,9 @@ $ source .myvenv/bin/activate
 (.myvenv)$ bin/install.sh
 ```
 
-### Manual Installation
+The script might not work for MacOS, please follow the manual installation instructions.
+
+### Option 2: Manual Installation
 
 3. Install dependencies.
 
@@ -69,7 +71,7 @@ $ source .myvenv/bin/activate
 
 ## Usage
 
-1. Place your documents on the intended data folder (default: `data/`).
+1. Place your documents in the intended data folder (default: `data/`).
 
 2. Activate your virtual environment.
 
@@ -83,9 +85,9 @@ $ source .myvenv/bin/activate
 (.myvenv)$ python3 app.py
 ```
 
-4. Open the provided URL on your web browser.
+4. Open [http://localhost:7860](http://localhost:7860) in your web browser.
 
-## Docker Compose Quick Start
+## Alternative usage option: Docker Compose
 
 1. Ensure you have Docker and Docker Compose installed.
 
@@ -106,7 +108,7 @@ docker compose -f docker-compose-gpu.yml up
 
 3. Wait for both services to start, which will take several minutes on the first run. ragsst-app has loaded succesfully when it prints to the console: `Set Collection: my_docs. Embedding Model: multi-qa-mpnet-base-cos-v1`
 
-4. Open [http://localhost:7860](http://localhost:7860) in your browser.
+4. Open [http://localhost:7860](http://localhost:7860) or [http://127.0.0.1:7860](http://127.0.0.1:7860) in your browser.
 
 
 ## Key Settings

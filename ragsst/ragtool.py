@@ -284,7 +284,12 @@ class RAGTool:
 
             # If no relevant documents found after previous criterias perform keyword search if enabled
             elif keyword_search:
-                kw = self.kw_extractor.extract_keywords(query)[0][0]
+                kw = self.kw_extractor.extract_keywords(query)
+                # handle empty lists
+                if len(kw) > 0 and len(kw[0]) > 0:
+                    kw = kw[0][0]
+                else:
+                    return ""
                 logger.debug(f"No results by semantic search. Searching by Keyword: {kw}")
                 query_result = self.collection.query(
                     query_texts="", n_results=nresults, where_document={"$contains": kw}
