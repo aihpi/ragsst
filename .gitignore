@@ -12,9 +12,9 @@ venv/
 .env
 
 # Data and export files
-data/*
-!data/.empty
-!data/sample_docs
+#data/*
+#!data/.empty
+#!data/sample_docs
 exports/*
 !exports/.empty
 
