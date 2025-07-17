@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 # Configuration parameters by area
 
 # Load text/documents
-DATA_PATH = "data"
+DATA_PATH = "data/sample_docs"
 
 # Vector Store
 VECTOR_DB_PATH = "vector_db"
