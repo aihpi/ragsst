@@ -28,9 +28,48 @@ The interface is divided into tabs for users to select and try the feature for t
 
 Rag systems rely on sentence embeddings and vector databases. More information on embeddings can be found in our MOOC [Understanding Embeddings for Natural Language Processing](https://open.hpi.de/courses/embeddingsfornlp-kisz2023).
 
+
 ## Installation
 
+### Windows Users: Install WSL First
+
+If you are using Windows, you need to install the Windows Subsystem for Linux (WSL) before proceeding with the installation steps below. WSL allows you to run a Linux environment directly on Windows, which is required for running the installation scripts and Ollama.
+
+#### How to Install WSL
+
+- Open PowerShell as Administrator (right-click the Start button and select "Windows PowerShell (Admin)").
+
+- Run the following command:
+
+   ```powershell
+   wsl --install
+   ```
+
+   This will install WSL and the default Ubuntu distribution. If prompted, restart your computer.
+
+- After restart, open Ubuntu from the Start menu and follow the prompts to set up your Linux username and password.
+
+- Update your Linux packages:
+
+   ```sh
+   sudo apt update && sudo apt upgrade
+   ```
+
+Once WSL is installed and set up, you can continue with the installation steps below from your WSL terminal.
+
+---
+
 1. Download or clone the repository.
+
+### Automatic Installation
+
+2. In bash, run the following installation script:
+
+```shell
+(.myvenv)$ bin/install.sh
+```
+
+### Manual Installation
 
 2. Create and activate a virtual environment (optional).
 
@@ -38,16 +77,6 @@ Rag systems rely on sentence embeddings and vector databases. More information o
 $ python3 -m venv .myvenv
 $ source .myvenv/bin/activate
 ```
-
-### Automatic Installation
-
-3. In bash, run the following installation script:
-
-```shell
-(.myvenv)$ bin/install.sh
-```
-
-### Manual Installation
 
 3. Install dependencies.
 
