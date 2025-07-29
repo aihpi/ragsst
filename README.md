@@ -31,9 +31,9 @@ Rag systems rely on sentence embeddings and vector databases. More information o
 
 ## Installation
 
-### Windows Users: Install WSL First
+### Windows Users: Install WSL2 First
 
-If you are using Windows, you need to install the Windows Subsystem for Linux (WSL) before proceeding with the installation steps below. WSL allows you to run a Linux environment directly on Windows, which is required for running the installation scripts and Ollama.
+If you are using Windows, you need to install the Windows Subsystem for Linux (WSL) before proceeding with the installation steps below. WSL allows you to run a Linux environment directly on Windows, which is required for running the installation scripts and Ollama. Note that for running Ollama, you need to install WSL2.
 
 #### How to Install WSL
 
@@ -45,7 +45,7 @@ If you are using Windows, you need to install the Windows Subsystem for Linux (W
    wsl --install
    ```
 
-   This will install WSL and the default Ubuntu distribution. If prompted, restart your computer.
+   This will install WSL2 (if your computer supports WSL2) and the default Ubuntu distribution. If prompted, restart your computer.
 
 - After restart, open Ubuntu from the Start menu and follow the prompts to set up your Linux username and password.
 
