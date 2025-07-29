@@ -9,7 +9,7 @@ def main():
     #print("Making interface")
     mpragst = make_interface(ragsst)
     #print("Launching Gradio")
-    mpragst.launch(show_api=False, server_name="0.0.0.0")
+    mpragst.launch(show_api=False, server_name="0.0.0.0", server_port=7860)
     #print("Gradio launched")
 
 if __name__ == "__main__":

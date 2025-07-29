@@ -72,7 +72,9 @@ class RAGTool:
             "stream": False,
             "options": {"temperature": temp, "top_p": top_p, "top_k": top_k},
         }
-
+        
+        # Initialize response_dic to None to avoid UnboundLocalError
+        response_dic = {}
         try:
             r = requests.post(url, json=data)
             response_dic = json.loads(r.text)
@@ -95,6 +97,7 @@ class RAGTool:
             "options": {"temperature": temp, "top_p": top_p, "top_k": top_k},
         }
 
+        response_dic = {}
         try:
             r = requests.post(url, json=data)
             response_dic = json.loads(r.text)
@@ -110,6 +113,7 @@ class RAGTool:
     def list_local_models(self) -> List:
 
         url = self.llm_base_url + "/tags"
+        response_dic = {}
 
         try:
             r = requests.get(url)
