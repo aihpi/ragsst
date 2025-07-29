@@ -46,9 +46,11 @@ dependencies = [
     "idna==3.10",
     "importlib-metadata==8.7.0",
     "importlib-resources==6.5.2",
+    "ipykernel>=6.30.0",
     "jellyfish==1.2.0",
     "jinja2==3.1.6",
     "joblib==1.5.1",
+    "jupyter>=1.1.1",
     "kiwisolver==1.4.8",
     "kubernetes==33.1.0",
     "lxml==6.0.0",
@@ -150,5 +152,5 @@ dependencies = [
     "websockets==12.0",
     "wrapt==1.17.2",
     "yake==0.6.0",
-    "zipp==3.23.0"
+    "zipp==3.23.0",
 ]
