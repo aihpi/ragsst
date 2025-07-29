@@ -66,7 +66,7 @@ Once WSL is installed and set up, you can continue with the installation steps b
 2. In bash, run the following installation script:
 
 ```shell
-(.myvenv)$ bin/install.sh # as of 29-07-2025 not working properly
+(.myvenv)$ bin/install.sh
 ```
 
 The script might not work for MacOS, please follow the manual installation instructions.
