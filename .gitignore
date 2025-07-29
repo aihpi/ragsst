@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Python byte-code files
 __pycache__/
 *.pyc
@@ -34,6 +33,7 @@ obsolete/
 # My local files
 my_*
 local_*
+tmp*
 
 # IDE
 .vscode/
@@ -49,57 +49,3 @@ local_*
 todo.txt
 to-do.txt
 tasklist.md
-=======
-# Python byte-code files
-__pycache__/
-*.pyc
-
-# Virtual Environment
-myvenv/
-venv/
-.myvenv/
-.venv/
-
-# Env variables file
-.env
-
-# Data and export files
-#data/*
-#!data/.empty
-#!data/sample_docs
-exports/*
-!exports/.empty
-
-# Logs
-log/*
-!log/.empty
-
-# Local data folders:
-local/
-resources/
-vector_db/
-bak/
-flagged/
-obsolete/
-
-# My local files
-my_*
-local_*
-
-# IDE
-.vscode/
-.DS_Store
-.idea/
-
-# mypy and pytest
-.mypy_cache/
-.pytest_cache/
-
-# Compact code, bins
-*.tar
-
-# Other
-todo.txt
-to-do.txt
-tasklist.md
->>>>>>> be83d247f91aabff3f71f48a297a3cd43ffc32a9

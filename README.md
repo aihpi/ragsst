@@ -66,7 +66,7 @@ Once WSL is installed and set up, you can continue with the installation steps b
 2. In bash, run the following installation script:
 
 ```shell
-(.myvenv)$ bin/install.sh
+(.myvenv)$ bin/install.sh # as of 29-07-2025 not working properly
 ```
 
 The script might not work for MacOS, please follow the manual installation instructions.
@@ -76,14 +76,14 @@ The script might not work for MacOS, please follow the manual installation instr
 2. Create and activate a virtual environment (optional).
 
 ```shell
-$ python3 -m venv .myvenv
+$ uv venv .myvenv
 $ source .myvenv/bin/activate
 ```
 
 3. Install dependencies.
 
 ```shell
-(.myvenv)$ pip3 install -r requirements.txt
+(.myvenv)$ uv sync
 ```
 
 4. Install **Ollama** to run Large Language Models (LLMs) locally. (Or follow the installation instructions for your operating system: [Install Ollama](https://ollama.com/download)).
