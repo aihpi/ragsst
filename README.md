@@ -83,7 +83,7 @@ $ source .myvenv/bin/activate
 3. Install dependencies.
 
 ```shell
-(.myvenv)$ uv sync
+(.myvenv)$ uv sync --active
 ```
 
 4. Install **Ollama** to run Large Language Models (LLMs) locally. (Or follow the installation instructions for your operating system: [Install Ollama](https://ollama.com/download)).

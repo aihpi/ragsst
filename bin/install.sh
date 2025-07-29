@@ -9,6 +9,6 @@ if [[ $VENV_CHOICE == [yY] ]]; then
 	source .myvenv/bin/activate
 fi
 echo 'Installing requirements...' && \
-uv sync
+uv sync --active
 echo 'Pulling ollama model...' && \
 ollama pull llama3.2 || echo 'choose and download a model with $ ollama pull <your_model_of_choice>'
