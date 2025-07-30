@@ -120,22 +120,16 @@ $ source .myvenv/bin/activate
 
 1. Ensure you have Docker and Docker Compose installed.
 
-2. Install the [latest NVIDIA drivers](https://www.nvidia.com/en-us/drivers/) for your GPU on your host system. Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). (Only necessary for utilizing a GPU.)
+2. Install the [latest NVIDIA drivers](https://www.nvidia.com/en-us/drivers/) for your GPU on your host system. Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). (Only necessary for utilising a GPU.)
 
 
-2. Build and start the app and Ollama, either in default CPU mode...
-
-```sh
-docker compose up --build
-```
-
-... or with a dedicated GPU.
+3. Build and start the app and Ollama
 
 ```sh
-docker compose -f docker-compose-gpu.yml up
+./run.sh
 ```
 
-3. Wait for both services to start, which will take several minutes on the first run. ragsst-app has loaded succesfully when it prints to the console: `Set Collection: my_docs. Embedding Model: multi-qa-mpnet-base-cos-v1`
+3. Wait for both services to start, which will take several minutes on the first run.
 
 4. Open [http://localhost:7860](http://localhost:7860) or [http://127.0.0.1:7860](http://127.0.0.1:7860) in your browser.
 
