@@ -17,6 +17,7 @@ data/*
 !data/sample_docs
 exports/*
 !exports/.empty
+slides*
 
 # Logs
 log/*
