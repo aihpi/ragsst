@@ -33,7 +33,7 @@ Rag systems rely on sentence embeddings and vector databases. More information o
 
 ### Windows Users: Install WSL2 First
 
-If you are using Windows, you need to install the Windows Subsystem for Linux (WSL) before proceeding with the installation steps below. WSL allows you to run a Linux environment directly on Windows, which is required for running the installation scripts and Ollama. Note that for running Ollama, you need to install WSL2.
+If you are using Windows, you need to install the *Windows Subsystem for Linux* (*WSL*) before proceeding with the installation steps below. *WSL* allows you to run a Linux environment directly on Windows, which is required for running the installation scripts and *Ollama*. Note that for running *Ollama*, you need to install *WSL2*.
 
 #### How to Install WSL
 
@@ -45,9 +45,9 @@ If you are using Windows, you need to install the Windows Subsystem for Linux (W
    wsl --install
    ```
 
-   This will install WSL2 (if your computer supports WSL2) and the default Ubuntu distribution. If prompted, restart your computer.
+   This will install *WSL2* (if your computer supports *WSL2*) and the default Ubuntu distribution. If prompted, restart your computer.
 
-- After restart, open Ubuntu from the Start menu and follow the prompts to set up your Linux username and password.
+- After restart, open *Ubuntu* from the Start menu and follow the prompts to set up your Linux username and password.
 
 - Update your Linux packages:
 
@@ -55,48 +55,80 @@ If you are using Windows, you need to install the Windows Subsystem for Linux (W
    sudo apt update && sudo apt upgrade
    ```
 
-Once WSL is installed and set up, you can continue with the installation steps below from your WSL terminal.
+Once *WSL* is installed and set up, you can continue with the installation steps below from your *WSL* terminal.
 
 ---
 
 1. Download or clone the repository.
 
-### Option 1: Automatic Installation
+2. Ensure that *uv* is installed.
 
-2. In bash, run the following installation script:
+For Linux/Windows:
 
 ```shell
-(.myvenv)$ bin/install.sh
+$ pip install uv
+```
+
+For Mac:
+
+```shell
+$ brew install uv
+```
+
+### Option 1: Automatic Installation
+
+3. In bash, run the following installation script:
+
+```shell
+$ bin/install.sh
 ```
 
 The script might not work for MacOS, please follow the manual installation instructions.
 
 ### Option 2: Manual Installation
 
-2. Create and activate a virtual environment (optional).
+3. Create and activate a virtual environment (optional).
 
 ```shell
 $ uv venv .myvenv
 $ source .myvenv/bin/activate
 ```
 
-3. Install dependencies.
+4. Install dependencies.
 
 ```shell
 (.myvenv)$ uv sync --active
 ```
 
-4. Install **Ollama** to run Large Language Models (LLMs) locally. (Or follow the installation instructions for your operating system: [Install Ollama](https://ollama.com/download)).
+5. Install **Ollama** to run Large Language Models (LLMs) locally. (Or follow the installation instructions for your operating system: [Install Ollama](https://ollama.com/download)).
 
 ```shell
 (.myvenv)$ curl -fsSL https://ollama.ai/install.sh | sh
 ```
 
-5. Choose and download an LLM [model](https://ollama.com/library) [\*]. For example:
+6. Choose and download an LLM [model](https://ollama.com/library) [\*]. For example:
 
 ```shell
 (.myvenv)$ ollama pull llama3.2
 ```
+
+## Alternative usage option: Docker Compose
+
+3. Ensure you have Docker and Docker Compose installed.
+
+4. Install the [latest NVIDIA drivers](https://www.nvidia.com/en-us/drivers/) for your GPU on your host system. Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). (Only necessary for utilising a GPU.)
+
+
+5. Build and start the app and Ollama
+
+```sh
+./run.sh
+```
+
+6. Wait for both services to start, which will take several minutes on the first run.
+
+7. Open [http://localhost:7860](http://localhost:7860) or [http://127.0.0.1:7860](http://127.0.0.1:7860) in your browser.
+
 
 ## Usage
 
@@ -114,25 +146,13 @@ $ source .myvenv/bin/activate
 (.myvenv)$ python3 app.py
 ```
 
-4. Open [http://localhost:7860](http://localhost:7860) in your web browser.
+or if you installed via Docker
 
-## Alternative usage option: Docker Compose
-
-1. Ensure you have Docker and Docker Compose installed.
-
-2. Install the [latest NVIDIA drivers](https://www.nvidia.com/en-us/drivers/) for your GPU on your host system. Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). (Only necessary for utilising a GPU.)
-
-
-3. Build and start the app and Ollama
-
-```sh
-./run.sh
+```shell
+$ ./run.sh
 ```
 
-3. Wait for both services to start, which will take several minutes on the first run.
-
-4. Open [http://localhost:7860](http://localhost:7860) or [http://127.0.0.1:7860](http://127.0.0.1:7860) in your browser.
-
+4. Open [http://localhost:7860](http://localhost:7860) in your web browser.
 
 ## Key Settings
 
