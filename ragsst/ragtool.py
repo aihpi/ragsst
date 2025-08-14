@@ -163,7 +163,7 @@ class RAGTool:
         skip_included_files: bool = True,
         consider_content: bool = True,
     ) -> None:
-        """Create vector store collection from a set of documents"""
+        """Create vector store collection from a set of documents with incremental updates"""
 
         logger.info(f"Documents Path: {data_path}")
 
@@ -172,46 +172,68 @@ class RAGTool:
         files = list_files(data_path, extensions=('.txt', '.pdf', '.docx'))
         logger.info(f"{len(files)} files found.")
         logger.debug(f"Files: {', '.join([f.replace(data_path, '', 1) for f  in files])}")
-        logger.info("Populating embeddings database...")
+        
+        # Get current files in data directory
+        current_files = {os.path.basename(f) for f in files}
+        
+        # Get existing files in database
+        existing_data = self.collection.get(include=['metadatas'])
+        existing_files = {m.get('source') for m in existing_data.get('metadatas', [])}
+        existing_hashes = {}
+        
+        if consider_content:
+            # Build a mapping of filename to hash for existing files
+            for metadata in existing_data.get('metadatas', []):
+                source = metadata.get('source')
+                file_hash = metadata.get('file_hash')
+                if source and file_hash:
+                    existing_hashes[source] = file_hash
 
-        if skip_included_files:
-            sources = {
-                m.get('source')
-                for m in self.collection.get(include=['metadatas']).get('metadatas')
-            }
-            if consider_content:
-                files_hashes = {
-                    m.get('file_hash')
-                    for m in self.collection.get(include=['metadatas']).get('metadatas')
-                }
+        # Remove files from database that no longer exist in data directory
+        files_to_remove = existing_files - current_files
+        if files_to_remove:
+            logger.info(f"Removing {len(files_to_remove)} files no longer in data directory...")
+            for file_to_remove in files_to_remove:
+                logger.info(f"Removing {file_to_remove} from database...")
+                self.collection.delete(where={"source": file_to_remove})
+
+        logger.info("Populating embeddings database...")
 
         for f in files:
             _, file_name = os.path.split(f)
+            current_hash = None
+            
             if consider_content:
-                file_hash = hash_file(f)
+                current_hash = hash_file(f)
 
-            if skip_included_files and file_name in sources:
+            # Check if file should be processed
+            if skip_included_files and file_name in existing_files:
                 if not consider_content:
-                    logger.info(f"{file_name} name already in Vector-DB, skipping...")
+                    logger.info(f"{file_name} already in Vector-DB, skipping...")
                     continue
 
-                if file_hash in files_hashes:
-                    logger.info(f"{file_name} content already in Vector-DB, skipping...")
+                # Check if content has changed
+                if consider_content and current_hash == existing_hashes.get(file_name):
+                    logger.info(f"{file_name} content unchanged, skipping...")
                     continue
 
-                logger.info(f"Updating DB for {file_name} ...")
+                # File exists but content changed - update it
+                logger.info(f"Content changed for {file_name}, updating database...")
                 self.collection.delete(where={"source": file_name})
+            else:
+                logger.info(f"Processing new file: {file_name}...")
 
-            logger.info(f"Reading and splitting {file_name} ...")
+            # Process the file (new or updated)
+            logger.info(f"Reading and splitting {file_name}...")
             text = read_file(f)
             chunks = split_text(text)
             logger.info(f"Resulting segment count: {len(chunks)}")
-            logger.info(f"Embedding and storing {file_name} ...")
+            logger.info(f"Embedding and storing {file_name}...")
 
             for i, c in tqdm(enumerate(chunks, 1), total=len(chunks)):
                 metadata = {"source": file_name, "part": i}
                 if consider_content:
-                    metadata["file_hash"] = file_hash
+                    metadata["file_hash"] = current_hash
 
                 self.collection.add(
                     documents=c,
@@ -220,6 +242,29 @@ class RAGTool:
                 )
 
         logger.info(f"Available collections: {self.list_collections_names_w_metainfo()}")
+
+    def sync_collection_with_data(
+        self,
+        data_path: str = None,
+        collection_name: str = None,
+        consider_content: bool = True,
+    ) -> None:
+        """
+        Synchronize the vector database with the current state of the data directory.
+        This is a convenience method that calls make_collection with sync behavior.
+        """
+        if data_path is None:
+            data_path = self.data_path
+        if collection_name is None:
+            collection_name = self.collection_name
+            
+        logger.info("Synchronizing vector database with data directory...")
+        self.make_collection(
+            data_path=data_path,
+            collection_name=collection_name,
+            skip_included_files=True,
+            consider_content=consider_content,
+        )
 
     # ============== Semantic Search / Retrieval ===============================
 
@@ -412,10 +457,10 @@ class RAGTool:
         )
 
     def setup_vec_store(self, collection_name: str = p.COLLECTION_NAME) -> None:
-        "Vector Store Initialization Setup"
+        "Vector Store Initialization Setup with automatic synchronization"
 
         if self._check_initdb_conditions():
-            logger.debug("Init DB contitions are met")
+            logger.debug("Init DB conditions are met")
             self.make_collection(self.data_path, collection_name)
         else:
             collections = self.vs_client.list_collections()
@@ -426,6 +471,10 @@ class RAGTool:
                 )
                 if not self.collection.peek(limit=1).get("ids"):
                     logger.info("The Set Collection is empty. Populate it or choose another one")
+                else:
+                    # Auto-sync existing collection with current data directory
+                    logger.info("Checking for changes in data directory...")
+                    self.sync_collection_with_data()
             else:
                 self.set_collection(collection_name)
                 logger.warning("The Database is empty. Make/Update Database")
