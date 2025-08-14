@@ -410,29 +410,9 @@ class RAGTool:
             max_subqueries, decomposition_method
         )
 
-    def hyde_rag(
-        self, 
-        user_msg: str, 
-        sim_th: float, 
-        nresults: int, 
-        top_k: int, 
-        top_p: float, 
-        temp: float,
-        num_hypotheses: int = 1,
-        hypothesis_length: str = "paragraph"
-    ) -> tuple[str, list[dict], str, str]:
-        """
-        HyDE RAG: Generate hypothetical documents, use them for retrieval, then generate response
-        Returns: (final_response, query_results, formatted_results, hyde_info)
-        """
-        return QueryTransformations.hyde_rag(
-            self, user_msg, sim_th, nresults, top_k, top_p, temp,
-            num_hypotheses, hypothesis_length
-        )
-
     # ============== Retrieval Augemented Generation ===========================
 
-    def rag_query(
+    def multi_query_rag(
         self, 
         user_msg: str, 
         sim_th: float, 
@@ -537,6 +517,25 @@ Please provide a detailed answer based on all the context provided:"""
         formatted_results = self._format_query_results(query_results)
         
         return final_response, query_results, formatted_results
+
+    # New wrapper methods using QueryTransformations class
+    def multi_query_rag(
+        self, 
+        user_msg: str, 
+        sim_th: float, 
+        nresults: int, 
+        top_k: int, 
+        top_p: float, 
+        temp: float,
+        num_paraphrases: int = 3
+    ) -> tuple[str, list[dict], str]:
+        """
+        Multi Query RAG: Generate multiple paraphrases, retrieve for each, then generate response
+        Returns: (final_response, query_results, formatted_results)
+        """
+        return QueryTransformations.multi_query_rag(
+            self, user_msg, sim_th, nresults, top_k, top_p, temp, num_paraphrases
+        )
 
     def _format_query_results(self, query_results: list[dict]) -> str:
         """Format query results for display in the interface"""

@@ -17,10 +17,14 @@
 
 A quick start, locally-run tool to test and use as basis for various document-related use cases:
 
-- Rag Query: Prompt an LLM that uses relevant context to answer your queries.
-- Semantic Retrieval: Retrieve relevant passages from documents, showing sources and relevance.
-- Rag Chat: Interact with an LLM that utilizes document retrieval and chat history.
-- LLM Chat: Chat and test a local LLM, without document context.
+- **Rag Query**: Prompt an LLM that uses relevant context to answer your queries.
+- **Semantic Retrieval**: Retrieve relevant passages from documents, showing sources and relevance.
+- **Rag Chat**: Interact with an LLM that utilizes document retrieval and chat history.
+- **LLM Chat**: Chat and test a local LLM, without document context.
+- **Multi Query RAG**: Generate multiple paraphrases of your query to improve retrieval coverage and find documents that might be missed by a single query formulation.
+- **RAG Fusion**: Combine multiple query variations with weighted fusion scoring to rank and filter documents for more comprehensive results.
+- **Decomposition RAG**: Break down complex queries into simpler subproblems, solve them sequentially or independently, then synthesize the final answer.
+- **HyDE RAG**: Generate hypothetical documents that would answer your query, then use them for enhanced embedding-based retrieval.
 
 ![RAGSST](images/local-ragtool-demo.gif)
 
@@ -147,7 +151,7 @@ $ source .myvenv/bin/activate
 ```
 
 or if you installed via Docker
-
+la
 ```shell
 $ ./run.sh
 ```
