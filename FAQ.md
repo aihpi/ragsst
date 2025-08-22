@@ -54,7 +54,7 @@ You can customize the answer style by editing the prompt templates in `./ragsst/
 <details>
 <summary><strong>Ollama throws an error about memory or model size.</strong></summary>
 
-Use a smaller model such as `llama3.2` or `qwen2.5:3b`, especially on systems without a dedicated GPU.
+Use a smaller model such as `llama3.2:1b` or `qwen2.5:3b`, especially on systems without a dedicated GPU.
 </details>
 
 ---

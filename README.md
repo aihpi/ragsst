@@ -113,7 +113,7 @@ $ source .myvenv/bin/activate
 6. Choose and download an LLM [model](https://ollama.com/library) [\*]. For example:
 
 ```shell
-(.myvenv)$ ollama pull llama3.2
+(.myvenv)$ ollama pull llama3.2:8b
 ```
 
 ## Alternative usage option: Docker Compose
@@ -180,7 +180,7 @@ Check out the [Frequently Asked Questions (FAQ)](./FAQ.md) and please let us kno
 
 ---
 
-[\*] Performance consideration: On notebooks/PCs with dedicated GPUs, models such as llama3.1, mistral or gemma2 should be able to run smoothly and rapidly. On a standard notebook, or if you encounter any memory of performance issues, prioritize smaller models such as llama3.2 or qwen2.5:3b.
+[\*] Performance consideration: On notebooks/PCs with dedicated GPUs, models such as llama3.1, mistral or gemma2 should be able to run smoothly and rapidly. On a standard notebook, or if you encounter any memory of performance issues, prioritize smaller models such as llama3.2:1b or qwen2.5:3b.
 
 ## Development
 
