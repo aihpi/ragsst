@@ -113,7 +113,7 @@ $ source .myvenv/bin/activate
 6. Choose and download an LLM [model](https://ollama.com/library) [\*]. For example:
 
 ```shell
-(.myvenv)$ ollama pull llama3.2:8b
+(.myvenv)$ ollama pull llama3.2:3b
 ```
 
 ## Alternative usage option: Docker Compose
@@ -144,7 +144,7 @@ $ source .myvenv/bin/activate
 $ source .myvenv/bin/activate
 ```
 
-3. Start the tool. [†]
+3. Start the tool. (Ensure that ollama ist running: `$ollama serve`)[†]
 
 ```shell
 (.myvenv)$ python3 app.py

@@ -11,4 +11,4 @@ fi
 echo 'Installing requirements...' && \
 uv sync --active
 echo 'Pulling ollama model...' && \
-ollama pull llama3.2:8b|| echo 'choose and download a model with $ ollama pull <your_model_of_choice>'
+ollama pull llama3.2:3b|| echo 'choose and download a model with $ ollama pull <your_model_of_choice>'

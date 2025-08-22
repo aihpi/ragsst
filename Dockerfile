@@ -12,7 +12,9 @@ RUN apt-get update && apt-get install -y \
 # Install uv and use pyproject.toml for dependencies
 COPY pyproject.toml .
 COPY uv.lock .
-RUN pip install --no-cache-dir uv && uv sync
+RUN pip install --no-cache-dir uv && \
+    uv venv .venv && \
+    uv sync
 
 # Copy application code
 COPY app.py ./

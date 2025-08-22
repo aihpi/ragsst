@@ -24,20 +24,20 @@ until curl -s http://localhost:11436/api/tags > /dev/null 2>&1; do
 done
 echo " Ready!"
 
-# Check if llama3.2:8b model exists
-if ! docker exec ollama ollama list | grep -q "llama3.2:8b"; then
-    echo "Downloading llama3.2:8b model (this may take several minutes)..."
+# Check if llama3.2:3b model exists
+if ! docker exec ollama ollama list | grep -q "llama3.2:3b"; then
+    echo "Downloading llama3.2:3b model (this may take several minutes)..."
     echo "This is a one-time download - subsequent starts will be much faster"
-    docker exec ollama ollama pull llama3.2:8b
+    docker exec ollama ollama pull llama3.2:3b
     
     if [ $? -eq 0 ]; then
-        echo "Model llama3.2:8b downloaded successfully!"
+        echo "Model llama3.2:3b downloaded successfully!"
     else
-        echo "Failed to download model llama3.2:8b"
+        echo "Failed to download model llama3.2:3b"
         exit 1
     fi
 else
-    echo "Model llama3.2:8b already available"
+    echo "Model llama3.2:3b already available"
 fi
 
 echo "All services ready!"
