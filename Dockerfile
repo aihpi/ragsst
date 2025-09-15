@@ -20,6 +20,12 @@ RUN pip install --no-cache-dir uv && \
 COPY app.py ./
 COPY ragsst ./ragsst
 
+# Add metadata labels for GitHub Container Registry
+LABEL org.opencontainers.image.source="https://github.com/aihpi/ragsst"
+LABEL org.opencontainers.image.description="RAGSST - Retrieval Augmented Generation and Semantic-Search Tool"
+LABEL org.opencontainers.image.licenses="GPL-3.0"
+LABEL org.opencontainers.image.documentation="https://github.com/aihpi/ragsst/blob/main/README.md"
+
 # Expose port
 EXPOSE 7860
 

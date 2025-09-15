@@ -10,10 +10,13 @@ services:
 
   # RAGSST App
   ragsst-app:
+      # Use pre-built image from GitHub Container Registry (for workshop participants)
+      image: ghcr.io/aihpi/ragsst:latest
+      # Uncomment the lines below to build locally instead of using pre-built image
+      # build:
+      #   context: ./
+      #   dockerfile: Dockerfile
       container_name: ragsst-app
-      build:
-        context: ./
-        dockerfile: Dockerfile
       ports:
         - "7860:7860"
       volumes:
